@@ -28,7 +28,7 @@ def make_api_request(url, payload, headers=None):
         response = requests.post(
             f"{BASE_URL}/{url}", json=serializable_payload, headers=headers
         )
-        response.raise_for_status()
+        # response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
         return {
@@ -222,7 +222,7 @@ def enrich_with_website_changes(business_id):
 def fetch_prospects(
     filters: models.prospects.FetchProspectsFilters,
     size: int = Field(
-        default=1000, le=1000, description="The number of prospects to return"
+        default=100, le=1000, description="The number of prospects to return"
     ),
     page_size: int = Field(
         default=100, le=100, description="The number of prospects to return per page"
@@ -326,7 +326,7 @@ def fetch_businesses(
         default=100, le=100, description="The number of businesses to return per page"
     ),
     page: int = Field(default=1, description="The page number to return"),
-) -> models.businesses.FetchBusinessesResponse:
+):
     """
     Fetch businesses from the Explorium API filtered by various criteria.
     """

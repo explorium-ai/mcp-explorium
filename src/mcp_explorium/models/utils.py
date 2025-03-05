@@ -37,7 +37,7 @@ def get_filters_payload(filters) -> dict:
 
 
 def enum_list_to_serializable(enum_list: list[Enum]):
-    return [item.value for item in enum_list]
+    return [str(item.value) for item in enum_list]
 
 
 def pydantic_model_to_serializable(model: BaseModel | list[BaseModel] | dict):

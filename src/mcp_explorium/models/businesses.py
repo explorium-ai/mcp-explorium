@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 from enum import Enum
 from ._shared import BasePaginatedResponse
 
@@ -7,60 +7,75 @@ from ._shared import BasePaginatedResponse
 # Fetch Businesses Filters
 class CompanySize(str, Enum):
     """All available company size ranges.
-    Possible values:"""
+    Possible values:
+    SIZE_1_10: 1-10 employees
+    SIZE_11_50: 11-50 employees
+    SIZE_51_200: 51-200 employees
+    SIZE_201_500: 201-500 employees
+    SIZE_501_1000: 501-1000 employees
+    SIZE_1001_5000: 1001-5000 employees
+    SIZE_5001_10000: 5001-10000 employees
+    SIZE_10001_PLUS: 10001+ employees
+
+    """
 
     SIZE_1_10 = "1-10"
-    """1-10 employees"""
     SIZE_11_50 = "11-50"
-    """11-50 employees"""
     SIZE_51_200 = "51-200"
-    """51-200 employees"""
     SIZE_201_500 = "201-500"
-    """201-500 employees"""
     SIZE_501_1000 = "501-1000"
-    """501-1000 employees"""
     SIZE_1001_5000 = "1001-5000"
-    """1001-5000 employees"""
     SIZE_5001_10000 = "5001-10000"
-    """5001-10000 employees"""
     SIZE_10001_PLUS = "10001+"
-    """10001+ employees"""
 
 
 class CompanyRevenue(str, Enum):
-    """All available company revenue ranges"""
+    """
+    All available revenue ranges in annual $:
+    REV_0_500K: $0-500K yearly revenue
+    REV_500K_1M: $500k-1M yearly revenue
+    REV_1M_5M: $1M-5M yearly revenue
+    REV_5M_10M: $5M-10M yearly revenue
+    REV_10M_25M: $10M-25M yearly revenue
+    REV_25M_75M: $25M-75M yearly revenue
+    REV_75M_200M: $75M-200M yearly revenue
+    REV_200M_500M: $200M-500M yearly revenue
+    REV_500M_1B: $500M-1B yearly revenue
+    REV_1B_10B: $1B-10B yearly revenue
+    REV_10B_100B: $10B-100B yearly revenue
+    REV_100B_1T: $100B-1T yearly revenue
+    REV_1T_10T: $1T-10T yearly revenue
+    REV_10T_PLUS: $10T+ yearly revenue
+    """
 
-    REV_0_1M = "0-1M"
-    """$0-1M annual revenue"""
+    REV_0_500K = "0-500K"
+    REV_500K_1M = "500k-1M"
     REV_1M_5M = "1M-5M"
-    """$1M-5M annual revenue"""
     REV_5M_10M = "5M-10M"
-    """$5M-10M annual revenue"""
-    REV_10M_50M = "10M-50M"
-    """$10M-50M annual revenue"""
-    REV_50M_100M = "50M-100M"
-    """$50M-100M annual revenue"""
-    REV_100M_500M = "100M-500M"
-    """$100M-500M annual revenue"""
+    REV_10M_25M = "10M-25M"
+    REV_25M_75M = "25M-75M"
+    REV_75M_200M = "75M-200M"
+    REV_200M_500M = "200M-500M"
     REV_500M_1B = "500M-1B"
-    """$500M-1B annual revenue"""
     REV_1B_10B = "1B-10B"
-    """$1B-10B annual revenue"""
     REV_10B_100B = "10B-100B"
-    """$10B-100B annual revenue"""
+    REV_100B_1T = "100B-1T"
+    REV_1T_10T = "1T-10T"
+    REV_10T_PLUS = "10T+"
 
 
 class CompanyAge(str, Enum):
-    """All available company age ranges"""
+    """All available company age ranges in years:
+    AGE_0_3: 0-3 years
+    AGE_4_10: 4-10 years
+    AGE_11_20: 11-20 years
+    AGE_20_PLUS: 20+ years
+    """
 
     AGE_0_3 = "0-3"
-    """0-3 years"""
     AGE_4_10 = "4-10"
-    """4-10 years"""
     AGE_11_20 = "11-20"
-    """11-20 years"""
     AGE_20_PLUS = "20+"
-    """20+ years"""
 
 
 class FetchBusinessesFilters(BaseModel):
@@ -119,10 +134,10 @@ class FetchBusinessesResponse(BasePaginatedResponse):
 
 
 class MatchBusinessInput(BaseModel):
-    """Input for matching businesses in bulk. Use multiple identifiers for higher match accuracy."""
+    """Input for matching businesses. Use multiple identifiers for higher match accuracy."""
 
-    name: str | None = None
-    domain: str | None = None
+    name: Optional[str]
+    domain: Optional[str]
 
 
 class BusinessEventType(str, Enum):
