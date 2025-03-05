@@ -126,7 +126,51 @@ class MatchBusinessInput(BaseModel):
 
 
 class BusinessEventType(str, Enum):
-    """Valid event types for the Explorium Business Events API."""
+    """Valid event types for the Explorium Business Events API.
+    A full list of supported events:
+    IPO Announcement: Company announces plans to go public through an initial public offering
+    New Funding Round: Company secures a new round of investment funding
+    New Investment: Company makes an investment in another business or venture
+    New Product: Company launches a new product or service
+    New Office: Company opens a new office location
+    Closing Office: Company closes an existing office location
+    New Partnership: Company forms a strategic partnership with another organization
+
+
+    Department Growth
+    Increase in Engineering Department: Expansion of the engineering team
+    Increase in Sales Department: Growth in the sales team
+    Increase in Marketing Department: Expansion of the marketing team
+    Increase in Operations Department: Growth in operations staff
+    Increase in Customer Service Department: Expansion of customer service team
+    Increase in All Departments: Company-wide growth across all departments
+
+
+    Department Reduction
+    Decrease in Engineering Department: Reduction in engineering team size
+    Decrease in Sales Department: Reduction in sales team size
+    Decrease in Marketing Department: Reduction in marketing team size
+    Decrease in Operations Department: Reduction in operations staff
+    Decrease in Customer Service Department: Reduction in customer service team
+    Decrease in All Departments: Company-wide reduction across all departments
+
+
+    Hiring Initiatives
+    Employee Joined Company: Individual hire announcement
+    Hiring in Creative Department: Recruiting for creative roles
+    Hiring in Education Department: Recruiting for education-related positions
+    Hiring in Engineering Department: Recruiting for engineering and technical roles
+    Hiring in Finance Department: Recruiting for financial positions
+    Hiring in Health Department: Recruiting for healthcare-related roles
+    Hiring in Human Resources Department: Recruiting for HR positions
+    Hiring in Legal Department: Recruiting for legal team
+    Hiring in Marketing Department: Recruiting for marketing roles
+    Hiring in Operations Department: Recruiting for operations positions
+    Hiring in Professional Service Department: Recruiting for professional services
+    Hiring in Sales Department: Recruiting for sales positions
+    Hiring in Support Department: Recruiting for customer support roles
+    Hiring in Trade Department: Recruiting for trade-related positions
+    Hiring in Unknown Department: Recruiting where department is not specified"""
 
     IPO_ANNOUNCEMENT = "ipo_announcement"
     NEW_FUNDING_ROUND = "new_funding_round"
