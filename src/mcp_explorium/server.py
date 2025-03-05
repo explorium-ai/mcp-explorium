@@ -1,23 +1,48 @@
 # server.py
 from mcp.server.fastmcp import FastMCP
 import requests
-from typing import Optional, List
-from typing import List, Dict, Optional, Any
+from typing import Optional, List, Dict, Any
 from enum import Enum
 import os
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field, conlist
+import models
 
 # Get API keys from environment variables
 load_dotenv()
 EXPLORIUM_API_KEY = os.environ.get("EXPLORIUM_API_KEY")
+BASE_URL = "https://api.explorium.ai/v1"
+
+
+def make_api_request(url, payload, headers=None):
+    """Helper function to make API requests with consistent error handling"""
+    if headers is None:
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api_key": EXPLORIUM_API_KEY,
+        }
+
+    try:
+        serializable_payload = models.utils.pydantic_model_to_serializable(payload)
+        response = requests.post(
+            f"{BASE_URL}/{url}", json=serializable_payload, headers=headers
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        return {
+            "error": str(e),
+            "status_code": getattr(e.response, "status_code", None),
+        }
 
 
 # Create an MCP server
-mcp = FastMCP("Prospecting", dependencies=["requests", "pydantic", "dotenv"])
+mcp = FastMCP("Explorium", dependencies=["requests", "pydantic", "dotenv"])
 
 
 @mcp.tool()
-def match_business(name, domain):
+def match_business(name: str | None = None, domain: str | None = None):
     """Get the business ID from business name and business domain
     Use this when:
     - Need company size/revenue/industry
@@ -28,18 +53,46 @@ def match_business(name, domain):
     Do NOT use when:
     - Looking for specific employees
     - Getting executive contact info
-    - Finding team member details"
+    - Finding team member details
     """
-    url = "https://api.explorium.ai/v1/businesses/match"
-    headers = {"API_KEY": EXPLORIUM_API_KEY, "Content-Type": "application/json"}
-    data = {
-        "businesses_to_match": [
-            {"name": name, "domain": domain},
-        ]
-    }
+    return make_api_request(
+        "businesses/match",
+        {"businesses_to_match": [{"name": name, "domain": domain}]},
+    )
 
-    response = requests.post(url, headers=headers, json=data)
-    return response.json()
+
+class MatchBusinessBulkInput(BaseModel):
+    """Input for matching businesses in bulk. Use multiple identifiers for higher match accuracy."""
+
+    name: str | None = None
+    domain: str | None = None
+
+
+@mcp.tool()
+def match_businesses_bulk(
+    businesses_to_match: conlist(MatchBusinessBulkInput, min_length=1, max_length=50)
+):
+    """Get the business IDs from business name and business domain in bulk.
+    Use this when:
+    - Need company size/revenue/industry
+    - Analyzing overall business metrics
+    - Researching company background
+
+
+    Do NOT use when:
+    - Looking for specific employees
+    - Getting executive contact info
+    - Finding team member details
+    """
+    # Convert Pydantic models to dictionaries for JSON serialization
+    businesses_as_dicts = [
+        business.dict(exclude_none=True) for business in businesses_to_match
+    ]
+
+    return make_api_request(
+        "businesses/match",
+        {"businesses_to_match": businesses_as_dicts},
+    )
 
 
 @mcp.tool()
@@ -56,29 +109,19 @@ def enrich_with_company_profile(business_id):
     - Getting executive contact info
     - Finding team member details
     """
-    url = "https://api.explorium.ai/v1/businesses/firmographics/enrich"
-    payload = {"business_id": business_id}
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "api_key": EXPLORIUM_API_KEY,
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.json()
+    return make_api_request(
+        "businesses/firmographics/enrich",
+        {"business_id": business_id},
+    )
 
 
 @mcp.tool()
-def enrich_with_technographics(business_id):
+def enrich_with_technographics(business_id: str) -> Dict[str, Any]:
     """Get company technology stack and digital presence information"""
-    url = "https://api.explorium.ai/v1/businesses/technographics/enrich"
-    payload = {"business_id": business_id}
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "api_key": EXPLORIUM_API_KEY,
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.json()
+    return make_api_request(
+        "businesses/technographics/enrich",
+        {"business_id": business_id},
+    )
 
 
 @mcp.tool()
@@ -208,7 +251,6 @@ def enrich_with_website_changes(business_id):
 
 
 # start
-from pydantic import BaseModel, Field
 
 
 # Define JobLevel Enum
@@ -336,7 +378,12 @@ def fetch_prospects(
     if business_id:
         filters["business_id"] = {"type": "includes", "values": [business_id]}
 
-    data = {"mode": "full", "size": size, "page_size": 1, "filters": filters}
+    data = {
+        "mode": "full",
+        "size": size,
+        "page_size": 1,
+        "filters": models.utils.get_filters_payload(filters),
+    }
 
     # Send request using json parameter instead of str()
     response = requests.post(url, headers=headers, json=data)
@@ -508,9 +555,6 @@ from typing import Dict, List, Optional, Any
 import requests
 
 
-# API key is assumed to be defined elsewhere as EXPLORIUM_API_KEY
-
-
 class CompanySize(str, Enum):
     """All available company size ranges"""
 
@@ -549,142 +593,29 @@ class CompanyAge(str, Enum):
 
 @mcp.tool()
 def fetch_businesses(
-    company_sizes: Optional[List[CompanySize]] = None,
-    company_revenues: Optional[List[CompanyRevenue]] = None,
-    country_code: Optional[str] = None,
-    region_country_code: Optional[str] = None,
-    company_age: Optional[List[CompanyAge]] = None,
-    google_category: Optional[List[str]] = None,
-    naics_category: Optional[List[str]] = None,
-    linkedin_category: Optional[List[str]] = None,
-    size: int = 10,
-    page_size: int = 100,
-    page: int = 1,
-) -> Dict[str, Any]:
+    filters: models.businesses.FetchBusinessesFilters,
+    size: int = Field(
+        default=1000, le=1000, description="The number of businesses to return"
+    ),
+    page_size: int = Field(
+        default=100, le=100, description="The number of businesses to return per page"
+    ),
+    page: int = Field(default=1, description="The page number to return"),
+) -> models.businesses.FetchBusinessesResponse:
     """
     Fetch businesses from the Explorium API filtered by various criteria.
-
-    Args:
-        company_sizes (List[CompanySize], optional): List of company size ranges. Available options:
-            - SIZE_1_10: "1-10 employees"
-            - SIZE_11_50: "11-50 employees"
-            - SIZE_51_200: "51-200 employees"
-            - SIZE_201_500: "201-500 employees"
-            - SIZE_501_1000: "501-1000 employees"
-            - SIZE_1001_5000: "1001-5000 employees"
-            - SIZE_5001_10000: "5001-10000 employees"
-            - SIZE_10001_PLUS: "10001+ employees"
-
-        company_revenues (List[CompanyRevenue], optional): List of company revenue ranges. Available options:
-            - REV_0_1M: "$0-1M annual revenue"
-            - REV_1M_5M: "$1M-5M annual revenue"
-            - REV_5M_10M: "$5M-10M annual revenue"
-            - REV_10M_50M: "$10M-50M annual revenue"
-            - REV_50M_100M: "$50M-100M annual revenue"
-            - REV_100M_500M: "$100M-500M annual revenue"
-            - REV_500M_1B: "$500M-1B annual revenue"
-            - REV_1B_10B: "$1B-10B annual revenue"
-            - REV_10B_100B: "$10B-100B annual revenue"
-
-        country_code (str, optional): Filters businesses by country (e.g., "us", "ca")
-
-        region_country_code (str, optional): Filters businesses by specific regions within countries (e.g., "us-ca")
-
-        company_age (List[CompanyAge], optional): List of company age ranges. Available options:
-            - AGE_0_3: "0-3 years"
-            - AGE_4_10: "4-10 years"
-            - AGE_11_20: "11-20 years"
-            - AGE_20_PLUS: "20+ years"
-
-        google_category (List[str], optional): Filters by Google's classification (e.g., "retail", "consulting")
-
-        naics_category (List[str], optional): Filters by NAICS industry classification (e.g., "23", "5611")
-
-        linkedin_category (List[str], optional): Filters by LinkedIn industry classification (e.g., "software development")
-
-        size (int): Maximum number of results to return (max 1000)
-        page_size (int): Maximum number of records per page (max 100)
-        page (int): Page number to retrieve
-
-    Returns:
-        Dict[str, Any]: API response containing:
-            - total_results: Total number of matching businesses
-            - page: Current page number
-            - total_pages: Total number of pages
-            - data: List of business records with fields:
-                - name: Company name
-                - domain: Company website domain
-                - number_of_employees: Employee count range
-                - yearly_revenue: Annual revenue range
-
-    Raises:
-        ValueError: If size > 1000 or page_size > 100
-        requests.RequestException: If the API request fails
-
     """
-    if size > 1000:
-        raise ValueError("Maximum size is 1000")
-    if page_size > 100:
-        raise ValueError("Maximum page_size is 100")
-
-    # Build filters dictionary
-    filters = {}
-
-    if company_sizes:
-        filters["company_size"] = {
-            "type": "includes",
-            "values": [size.value for size in company_sizes],
-        }
-
-    if company_revenues:
-        filters["company_revenue"] = {
-            "type": "includes",
-            "values": [rev.value for rev in company_revenues],
-        }
-
-    if country_code:
-        filters["country_code"] = {"type": "includes", "values": [country_code]}
-
-    if region_country_code:
-        filters["region_country_code"] = {
-            "type": "includes",
-            "values": [region_country_code],
-        }
-
-    if company_age:
-        filters["company_age"] = {
-            "type": "includes",
-            "values": [age.value for age in company_age],
-        }
-
-    if google_category:
-        filters["google_category"] = {"type": "includes", "values": google_category}
-
-    if naics_category:
-        filters["naics_category"] = {"type": "includes", "values": naics_category}
-
-    if linkedin_category:
-        filters["linkedin_category"] = {"type": "includes", "values": linkedin_category}
-
     # Prepare request payload
     payload = {
         "mode": "full",
         "size": size,
         "page_size": page_size,
         "page": page,
-        "filters": filters,
+        "filters": models.utils.get_filters_payload(filters),
         "request_context": {},
     }
 
-    # Make API request
-    headers = {"API_KEY": EXPLORIUM_API_KEY, "Content-Type": "application/json"}
-
-    response = requests.post(
-        f"https://api.explorium.ai/v1/businesses", headers=headers, json=payload
-    )
-
-    response.raise_for_status()
-    return response.json()
+    return make_api_request("businesses", payload)
 
 
 @mcp.tool()
@@ -743,7 +674,7 @@ class EventType(str, Enum):
 
 @mcp.tool()
 def fetch_business_events(
-    business_id: str,
+    business_ids: List[str],
     event_types: List[EventType],
     timestamp_from: str,
     timestamp_to: Optional[str] = None,
@@ -756,7 +687,7 @@ def fetch_business_events(
        Organizational Announcements
 
 
-       A full list of supported events:
+    A full list of supported events:
     IPO Announcement: Company announces plans to go public through an initial public offering
     New Funding Round: Company secures a new round of investment funding
     New Investment: Company makes an investment in another business or venture
@@ -810,7 +741,7 @@ def fetch_business_events(
 
 
        Args:
-           business_id (str): Business ID to fetch events for
+           business_ids (List[str]): Business IDs to fetch events for. (max 20)
            event_types (List[EventType]): Types of events to retrieve from EventType enum
            timestamp_from (str): Return only events after this timestamp (ISO format)
            timestamp_to (str, optional): Return only events before this timestamp (ISO format)
@@ -825,8 +756,8 @@ def fetch_business_events(
 
     """
     # Basic validation
-    if not business_id:
-        raise ValueError("business_id cannot be empty")
+    if not business_ids:
+        raise ValueError("business_ids cannot be empty")
 
     if not event_types:
         raise ValueError("event_types cannot be empty")
@@ -838,7 +769,7 @@ def fetch_business_events(
 
     payload = {
         "event_types": [et.value for et in event_types],
-        "business_ids": [business_id],
+        "business_ids": business_ids,
         "timestamp_from": timestamp_from,
     }
 

@@ -12,11 +12,6 @@ pip install uv
 uv sync
 ```
 
-Create a `.env` file in the root of the repository and add your Explorium API key:
-
-```
-EXPLORIUM_API_KEY=<YOUR_API_KEY>
-```
 
 ## Tools
 
@@ -24,7 +19,7 @@ The MCP server provides tools for the Business and Prospect APIs described in th
 
 ## Usage with Claude Desktop
 
-Get the install path of the `uv` binary:
+Get the install path of the `uv`:
 
 ```bash
 which uv
@@ -39,19 +34,22 @@ Then, add this entry to your `claude_desktop_config.json` file:
 ```json
   "mcpServers": {
     "Explorium": {
-      "command": "<RESULT OF which uv>",
+      "command": "<UV_INSTALL_PATH>",
       "args": [
         "run",
         "--directory",
-        "<ABSOLUTE PATH TO REPOSITORY>",
+        "<REPOSITORY_PATH>",
         "--with",
         "mcp",
         "mcp",
         "run",
         "src/mcp_explorium/server.py"
-      ]
+      ],
+      "env": {
+        "EXPLORIUM_API_KEY": "<YOUR_API_KEY>"
+      }
     }
   }
 ```
 
-Replace `<RESULT OF which uv>` with the result of the `which uv` command above, and `<ABSOLUTE PATH TO REPOSITORY>` with the absolute path to the repository on your machine.
+Be sure to replace all the `<PLACEHOLDERS>` with the actual values.
