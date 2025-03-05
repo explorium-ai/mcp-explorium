@@ -5,14 +5,15 @@ from typing import Optional, List
 from typing import List, Dict, Optional, Any
 from enum import Enum
 import os
-
+from dotenv import load_dotenv
 
 # Get API keys from environment variables
+load_dotenv()
 EXPLORIUM_API_KEY = os.environ.get("EXPLORIUM_API_KEY")
 
 
 # Create an MCP server
-mcp = FastMCP("Prospecting", dependencies=["requests", "pydantic"])
+mcp = FastMCP("Prospecting", dependencies=["requests", "pydantic", "dotenv"])
 
 
 @mcp.tool()
