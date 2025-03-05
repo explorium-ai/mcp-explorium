@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Literal
 from enum import Enum
+from ._shared import BasePaginatedResponse
 
 
 # Fetch Businesses Filters
@@ -96,7 +97,7 @@ class FetchBusinessesFilters(BaseModel):
     )
 
 
-class Business:
+class Business(BaseModel):
     business_id: str
     name: str
     domain: str | None
@@ -115,3 +116,55 @@ class Business:
 
 class FetchBusinessesResponse(BasePaginatedResponse):
     data: list[Business]
+
+
+class MatchBusinessInput(BaseModel):
+    """Input for matching businesses in bulk. Use multiple identifiers for higher match accuracy."""
+
+    name: str | None = None
+    domain: str | None = None
+
+
+class BusinessEventType(str, Enum):
+    """Valid event types for the Explorium Business Events API."""
+
+    IPO_ANNOUNCEMENT = "ipo_announcement"
+    NEW_FUNDING_ROUND = "new_funding_round"
+    NEW_INVESTMENT = "new_investment"
+    NEW_PRODUCT = "new_product"
+    NEW_OFFICE = "new_office"
+    CLOSING_OFFICE = "closing_office"
+    NEW_PARTNERSHIP = "new_partnership"
+
+    # Department increases
+    INCREASE_ENGINEERING = "increase_in_engineering_department"
+    INCREASE_SALES = "increase_in_sales_department"
+    INCREASE_MARKETING = "increase_in_marketing_department"
+    INCREASE_OPERATIONS = "increase_in_operations_department"
+    INCREASE_CUSTOMER_SERVICE = "increase_in_customer_service_department"
+    INCREASE_ALL = "increase_in_all_departments"
+
+    # Department decreases
+    DECREASE_ENGINEERING = "decrease_in_engineering_department"
+    DECREASE_SALES = "decrease_in_sales_department"
+    DECREASE_MARKETING = "decrease_in_marketing_department"
+    DECREASE_OPERATIONS = "decrease_in_operations_department"
+    DECREASE_CUSTOMER_SERVICE = "decrease_in_customer_service_department"
+    DECREASE_ALL = "decrease_in_all_departments"
+
+    # Hiring events
+    EMPLOYEE_JOINED = "employee_joined_company"
+    HIRING_CREATIVE = "hiring_in_creative_department"
+    HIRING_EDUCATION = "hiring_in_education_department"
+    HIRING_ENGINEERING = "hiring_in_engineering_department"
+    HIRING_FINANCE = "hiring_in_finance_department"
+    HIRING_HEALTH = "hiring_in_health_department"
+    HIRING_HR = "hiring_in_human_resources_department"
+    HIRING_LEGAL = "hiring_in_legal_department"
+    HIRING_MARKETING = "hiring_in_marketing_department"
+    HIRING_OPERATIONS = "hiring_in_operations_department"
+    HIRING_PROFESSIONAL = "hiring_in_professional_service_department"
+    HIRING_SALES = "hiring_in_sales_department"
+    HIRING_SUPPORT = "hiring_in_support_department"
+    HIRING_TRADE = "hiring_in_trade_department"
+    HIRING_UNKNOWN = "hiring_in_unknown_department"

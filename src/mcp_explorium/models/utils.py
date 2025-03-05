@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from enum import Enum
 
 
 def get_filters_payload(filters) -> dict:
@@ -14,7 +15,7 @@ def get_filters_payload(filters) -> dict:
             if isinstance(value[0], Enum):
                 request_filters[field] = {
                     "type": "includes",
-                    "values": [item.value for item in value],
+                    "values": enum_list_to_serializable(value),
                 }
             else:
                 request_filters[field] = {
@@ -35,7 +36,11 @@ def get_filters_payload(filters) -> dict:
     return request_filters
 
 
-def pydantic_model_to_serializable(model: BaseModel):
+def enum_list_to_serializable(enum_list: list[Enum]):
+    return [item.value for item in enum_list]
+
+
+def pydantic_model_to_serializable(model: BaseModel | list[BaseModel] | dict):
     # Recursively convert all Pydantic models in the object to dicts
     if isinstance(model, BaseModel):
         return model.model_dump()
