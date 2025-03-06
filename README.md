@@ -32,13 +32,14 @@ https://modelcontextprotocol.io/quickstart/user
 Then, add this entry to your `claude_desktop_config.json` file:
 
 ```json
+{
   "mcpServers": {
     "Explorium": {
-      "command": "<UV_INSTALL_PATH>",
+      "command": "/Users/yotamfrid/.local/bin/uv",
       "args": [
         "run",
         "--directory",
-        "<REPOSITORY_PATH>",
+        "/Users/yotamfrid/work/explorium-ai/mcp-explorium",
         "--with",
         "mcp",
         "mcp",
@@ -46,10 +47,11 @@ Then, add this entry to your `claude_desktop_config.json` file:
         "src/mcp_explorium/server.py"
       ],
       "env": {
-        "EXPLORIUM_API_KEY": "<YOUR_API_KEY>"
+        "EXPLORIUM_API_KEY": "<EXPLORIUM_API_KEY>"
       }
     }
   }
+}
 ```
 
 Be sure to replace all the `<PLACEHOLDERS>` with the actual values.
