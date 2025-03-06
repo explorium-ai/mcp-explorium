@@ -1,7 +1,7 @@
 # Explorium API MCP Server
 This MCP server is used to interact with the Explorium API.
 
-Note: this is the README for developing the MCP server. For usage instructions, see the [README-pypi.md](README-pypi.md).
+**Note:** this is the README for developing the MCP server. For usage instructions, see the [README-pypi.md](README-pypi.md).
 
 ## Setup
 
@@ -49,14 +49,6 @@ Then, add this entry to your `claude_desktop_config.json` file:
         "run",
         "--directory",
         "<REPOSITORY_PATH>",
-        "--with",
-        "mcp",
-        "--with",
-        "dotenv",
-        "--with",
-        "pydantic",
-        "--with",
-        "requests",
         "mcp",
         "run",
         "local_dev_server.py"
@@ -82,10 +74,16 @@ To configure it to use the Explorium MCP server, go to
 with this command:
 
 ```bash
-uv run --directory repo_path --with mcp --with dotenv --with pydantic --with requests mcp run local_dev_server.py
+uv run --directory repo_path mcp run local_dev_server.py
 ```
 
 Make sure to replace `repo_path` with the actual path to the repository.
+
+You may turn on "Yolo mode" in Cursor settings to use tools without
+confirming under `Cursor > Settings > Cursor Settings > Features > Chat > Enable Yolo mode`.
+
+**Note:** local usage will not work if dev dependencies are not installed,
+or if the virtual environment is not activated.
 
 ## Building and Deploying
 
