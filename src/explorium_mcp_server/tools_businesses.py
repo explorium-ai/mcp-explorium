@@ -1,4 +1,5 @@
-from _shared import (
+from . import _shared
+from ._shared import (
     mcp,
     make_api_request,
     enum_list_to_serializable,
@@ -6,7 +7,7 @@ from _shared import (
     BASE_URL,
     EXPLORIUM_API_KEY,
 )
-import models
+from . import models
 from pydantic import conlist, Field
 from typing import List, Dict, Any, Literal
 from functools import partial

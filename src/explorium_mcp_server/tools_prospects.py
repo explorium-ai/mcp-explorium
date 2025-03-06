@@ -1,4 +1,5 @@
-from _shared import (
+from . import _shared
+from ._shared import (
     mcp,
     make_api_request,
     get_filters_payload,
@@ -6,7 +7,7 @@ from _shared import (
 )
 from pydantic import conlist, Field
 from typing import List
-import models
+from . import models
 from functools import partial
 
 prospect_ids_field = partial(

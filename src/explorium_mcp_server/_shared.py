@@ -11,6 +11,9 @@ load_dotenv()
 EXPLORIUM_API_KEY = os.environ.get("EXPLORIUM_API_KEY")
 BASE_URL = "https://api.explorium.ai/v1"
 
+if not EXPLORIUM_API_KEY:
+    raise ValueError("EXPLORIUM_API_KEY is not set")
+
 mcp = FastMCP("Explorium", dependencies=["requests", "pydantic", "dotenv"])
 
 
