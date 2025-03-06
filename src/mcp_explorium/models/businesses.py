@@ -141,51 +141,102 @@ class MatchBusinessInput(BaseModel):
 
 
 class BusinessEventType(str, Enum):
-    """Valid event types for the Explorium Business Events API.
-    A full list of supported events:
-    IPO Announcement: Company announces plans to go public through an initial public offering
-    New Funding Round: Company secures a new round of investment funding
-    New Investment: Company makes an investment in another business or venture
-    New Product: Company launches a new product or service
-    New Office: Company opens a new office location
-    Closing Office: Company closes an existing office location
-    New Partnership: Company forms a strategic partnership with another organization
+    """
+    Valid event types for the Explorium Business Events API.
 
+    IPO_ANNOUNCEMENT: Company announces plans to go public through an initial public offering
+    - link: str - Link to article
+    - ipo_date: datetime - Date of IPO
+    - event_id: str - News event ID
+    - company_name: str - Company name
+    - offer_amount: float - Company valuation
+    - number_of_shares: int - Number of issued shares
+    - stock_exchange: str - IPO stock exchange
+    - event_time: datetime - News event timestamp
+    - price_per_share: float - Price per share
+    - ticker: str - Ticker
 
-    Department Growth
-    Increase in Engineering Department: Expansion of the engineering team
-    Increase in Sales Department: Growth in the sales team
-    Increase in Marketing Department: Expansion of the marketing team
-    Increase in Operations Department: Growth in operations staff
-    Increase in Customer Service Department: Expansion of customer service team
-    Increase in All Departments: Company-wide growth across all departments
+    NEW_FUNDING_ROUND: Company secures a new round of investment funding
+    - founding_date: datetime - Date of funding round
+    - amount_raised: float - Amount raised in funding
+    - link: str - Link to article
+    - founding_stage: str - Funding round stage
+    - event_id: str - News event ID
+    - event_time: datetime - News event timestamp
+    - investors: str - Investors in funding round
+    - lead_investor: str - Lead investor
 
+    NEW_INVESTMENT: Company makes an investment in another business or venture
+    - investment_date: datetime - News event timestamp
+    - investment_type: str - Type of investment
+    - event_time: datetime - News report publishing date
+    - event_id: str - News event ID
+    - investment_target: str - Target of investment
+    - link: str - Link to article
+    - investment_amount: float - Amount of investment
 
-    Department Reduction
-    Decrease in Engineering Department: Reduction in engineering team size
-    Decrease in Sales Department: Reduction in sales team size
-    Decrease in Marketing Department: Reduction in marketing team size
-    Decrease in Operations Department: Reduction in operations staff
-    Decrease in Customer Service Department: Reduction in customer service team
-    Decrease in All Departments: Company-wide reduction across all departments
+    NEW_PRODUCT: Company launches a new product or service
+    - event_time: datetime - News event timestamp
+    - event_id: str - News event ID
+    - link: str - Link to article
+    - product_name: str - Name of new product
+    - product_description: str - Description of new product
+    - product_category: str - Category of new product
+    - product_launch_date: datetime - Launch date of new product
 
+    NEW_OFFICE: Company opens a new office location
+    - purpose_of_new_office: str - Purpose of new office
+    - link: str - Link to article
+    - opening_date: datetime - Date of office opening
+    - event_id: str - News event ID
+    - office_location: str - Location of new office
+    - event_time: datetime - News report publishing date
+    - number_of_employees: int - Number of employees at new office
 
-    Hiring Initiatives
-    Employee Joined Company: Individual hire announcement
-    Hiring in Creative Department: Recruiting for creative roles
-    Hiring in Education Department: Recruiting for education-related positions
-    Hiring in Engineering Department: Recruiting for engineering and technical roles
-    Hiring in Finance Department: Recruiting for financial positions
-    Hiring in Health Department: Recruiting for healthcare-related roles
-    Hiring in Human Resources Department: Recruiting for HR positions
-    Hiring in Legal Department: Recruiting for legal team
-    Hiring in Marketing Department: Recruiting for marketing roles
-    Hiring in Operations Department: Recruiting for operations positions
-    Hiring in Professional Service Department: Recruiting for professional services
-    Hiring in Sales Department: Recruiting for sales positions
-    Hiring in Support Department: Recruiting for customer support roles
-    Hiring in Trade Department: Recruiting for trade-related positions
-    Hiring in Unknown Department: Recruiting where department is not specified"""
+    CLOSING_OFFICE: Company closes an existing office location
+    - reason_for_closure: str - Reason for office closing
+    - event_time: datetime - News report publishing date
+    - office_location: str - Location of closing office
+    - closure_date: datetime - Date of office closing
+    - event_id: str - News event ID
+    - number_of_employees_affected: int - Number of employees impacted
+    - link: str - Link to article
+
+    NEW_PARTNERSHIP: Company forms a strategic partnership with another organization
+    - link: str - Link to article
+    - partner_company: str - Name of partnering company
+    - partnership_date: datetime - Date of partnership
+    - event_time: datetime - News report publishing date
+    - purpose_of_partnership: str - Partnership purpose
+    - event_id: str - News event ID
+
+    DEPARTMENT_INCREASE_*: Company announces an increase in a specific department
+    DEPARTMENT_DECREASE_*: Company announces a decrease in a specific department
+    Possible input departments: ENGINEERING, SALES, MARKETING, OPERATIONS, CUSTOMER_SERVICE, ALL
+    - department_change: float - Quarterly change in department headcount
+    - event_time: datetime - Department event timestamp
+    - event_id: str - Department event ID
+    - quarter_partition: str - Quarter when change occurred
+    - insertion_time: str - Event collection timestamp
+    - department: str - Name of department
+    - change_type: str - Type of department change
+
+    DEPARTMENT_HIRING_*: Company announces a hiring initiative in a specific department
+    Possible input departments: CREATIVE, EDUCATION, ENGINEERING, FINANCE, HEALTH, HR, LEGAL, MARKETING, OPERATIONS, PROFESSIONAL, SALES, SUPPORT, TRADE, UNKNOWN
+    - location: str - Location of hiring initiative
+    - event_id: str - Company hiring event ID
+    - event_time: datetime - When role was published
+    - job_count: int - Number of open positions
+    - job_titles: str - Job titles being hired for
+    - department: str - Department hiring is occurring in
+
+    EMPLOYEE_JOINED: Employee is hired by an organization
+    - job_department: str - Employee's current job department
+    - full_name: str - Employee's full name
+    - job_role_title: str - Employee's current job title
+    - event_id: str - Employee's event ID
+    - linkedin_url: str - Employee's LinkedIn URL
+    """
 
     IPO_ANNOUNCEMENT = "ipo_announcement"
     NEW_FUNDING_ROUND = "new_funding_round"
@@ -196,34 +247,34 @@ class BusinessEventType(str, Enum):
     NEW_PARTNERSHIP = "new_partnership"
 
     # Department increases
-    INCREASE_ENGINEERING = "increase_in_engineering_department"
-    INCREASE_SALES = "increase_in_sales_department"
-    INCREASE_MARKETING = "increase_in_marketing_department"
-    INCREASE_OPERATIONS = "increase_in_operations_department"
-    INCREASE_CUSTOMER_SERVICE = "increase_in_customer_service_department"
-    INCREASE_ALL = "increase_in_all_departments"
+    DEPARTMENT_INCREASE_ENGINEERING = "increase_in_engineering_department"
+    DEPARTMENT_INCREASE_SALES = "increase_in_sales_department"
+    DEPARTMENT_INCREASE_MARKETING = "increase_in_marketing_department"
+    DEPARTMENT_INCREASE_OPERATIONS = "increase_in_operations_department"
+    DEPARTMENT_INCREASE_CUSTOMER_SERVICE = "increase_in_customer_service_department"
+    DEPARTMENT_INCREASE_ALL = "increase_in_all_departments"
 
     # Department decreases
-    DECREASE_ENGINEERING = "decrease_in_engineering_department"
-    DECREASE_SALES = "decrease_in_sales_department"
-    DECREASE_MARKETING = "decrease_in_marketing_department"
-    DECREASE_OPERATIONS = "decrease_in_operations_department"
-    DECREASE_CUSTOMER_SERVICE = "decrease_in_customer_service_department"
-    DECREASE_ALL = "decrease_in_all_departments"
+    DEPARTMENT_DECREASE_ENGINEERING = "decrease_in_engineering_department"
+    DEPARTMENT_DECREASE_SALES = "decrease_in_sales_department"
+    DEPARTMENT_DECREASE_MARKETING = "decrease_in_marketing_department"
+    DEPARTMENT_DECREASE_OPERATIONS = "decrease_in_operations_department"
+    DEPARTMENT_DECREASE_CUSTOMER_SERVICE = "decrease_in_customer_service_department"
+    DEPARTMENT_DECREASE_ALL = "decrease_in_all_departments"
 
     # Hiring events
     EMPLOYEE_JOINED = "employee_joined_company"
-    HIRING_CREATIVE = "hiring_in_creative_department"
-    HIRING_EDUCATION = "hiring_in_education_department"
-    HIRING_ENGINEERING = "hiring_in_engineering_department"
-    HIRING_FINANCE = "hiring_in_finance_department"
-    HIRING_HEALTH = "hiring_in_health_department"
-    HIRING_HR = "hiring_in_human_resources_department"
-    HIRING_LEGAL = "hiring_in_legal_department"
-    HIRING_MARKETING = "hiring_in_marketing_department"
-    HIRING_OPERATIONS = "hiring_in_operations_department"
-    HIRING_PROFESSIONAL = "hiring_in_professional_service_department"
-    HIRING_SALES = "hiring_in_sales_department"
-    HIRING_SUPPORT = "hiring_in_support_department"
-    HIRING_TRADE = "hiring_in_trade_department"
-    HIRING_UNKNOWN = "hiring_in_unknown_department"
+    DEPARTMENT_HIRING_CREATIVE = "hiring_in_creative_department"
+    DEPARTMENT_HIRING_EDUCATION = "hiring_in_education_department"
+    DEPARTMENT_HIRING_ENGINEERING = "hiring_in_engineering_department"
+    DEPARTMENT_HIRING_FINANCE = "hiring_in_finance_department"
+    DEPARTMENT_HIRING_HEALTH = "hiring_in_health_department"
+    DEPARTMENT_HIRING_HR = "hiring_in_human_resources_department"
+    DEPARTMENT_HIRING_LEGAL = "hiring_in_legal_department"
+    DEPARTMENT_HIRING_MARKETING = "hiring_in_marketing_department"
+    DEPARTMENT_HIRING_OPERATIONS = "hiring_in_operations_department"
+    DEPARTMENT_HIRING_PROFESSIONAL = "hiring_in_professional_service_department"
+    DEPARTMENT_HIRING_SALES = "hiring_in_sales_department"
+    DEPARTMENT_HIRING_SUPPORT = "hiring_in_support_department"
+    DEPARTMENT_HIRING_TRADE = "hiring_in_trade_department"
+    DEPARTMENT_HIRING_UNKNOWN = "hiring_in_unknown_department"
