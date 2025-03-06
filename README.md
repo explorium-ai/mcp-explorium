@@ -30,15 +30,9 @@ mcp dev local_dev_server.py
 ```
 
 Create an `.env` file in the root of the repository with an
-`EXPLORIUM_API_KEY` environment variable if it's not already there.
+`EXPLORIUM_API_KEY` environment variable if it's not already configured.
 
 ### Usage with Claude Desktop
-
-Get the install path of the `uv`:
-
-```bash
-which uv
-```
 
 Follow the official guide to install Claude Desktop and set it up to use MCP servers:
 
@@ -57,12 +51,18 @@ Then, add this entry to your `claude_desktop_config.json` file:
         "<REPOSITORY_PATH>",
         "--with",
         "mcp",
+        "--with",
+        "dotenv",
+        "--with",
+        "pydantic",
+        "--with",
+        "requests",
         "mcp",
         "run",
         "local_dev_server.py"
       ],
       "env": {
-        "EXPLORIUM_API_KEY": "<EXPLORIUM_API_KEY>"
+        "EXPLORIUM_API_KEY": "<YOUR_API_KEY>"
       }
     }
   }
@@ -70,6 +70,8 @@ Then, add this entry to your `claude_desktop_config.json` file:
 ```
 
 Be sure to replace all the `<PLACEHOLDERS>` with the actual values.
+
+Run `which uv` to get your `uv` install path.
 
 ### Usage with Cursor
 
