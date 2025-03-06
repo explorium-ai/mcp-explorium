@@ -84,7 +84,6 @@ import requests
 def autocomplete(
     field: Literal[
         "country",
-        "country_code",
         "region_country_code",
         "google_category",
         "naics_category",
@@ -115,6 +114,7 @@ def autocomplete(
 
     Hints:
     - When looking for 'saas' in categories, use 'software'
+    - Use 'country' to get the country code
     """
     headers = {
         "accept": "application/json",
