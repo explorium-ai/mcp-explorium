@@ -19,7 +19,20 @@ pip install uv
 uv sync --group dev
 ```
 
-## Usage with Claude Desktop
+## Running Locally
+
+When developing locally, use `local_dev_server.py` to expose the MCP server to local clients.
+
+You can test it with the MCP Inspector:
+
+```bash
+mcp dev local_dev_server.py
+```
+
+Create an `.env` file in the root of the repository with an
+`EXPLORIUM_API_KEY` environment variable if it's not already there.
+
+### Usage with Claude Desktop
 
 Get the install path of the `uv`:
 
@@ -46,7 +59,7 @@ Then, add this entry to your `claude_desktop_config.json` file:
         "mcp",
         "mcp",
         "run",
-        "src/explorium_mcp_server/__main__.py"
+        "local_dev_server.py"
       ],
       "env": {
         "EXPLORIUM_API_KEY": "<EXPLORIUM_API_KEY>"
@@ -57,6 +70,20 @@ Then, add this entry to your `claude_desktop_config.json` file:
 ```
 
 Be sure to replace all the `<PLACEHOLDERS>` with the actual values.
+
+### Usage with Cursor
+
+Cursor has [built-in support for MCP servers](https://docs.cursor.com/context/model-context-protocol).
+
+To configure it to use the Explorium MCP server, go to
+`Cursor > Settings > Cursor Settings > MCP` and add an "Explorium" entry
+with this command:
+
+```bash
+uv run --directory repo_path --with mcp --with dotenv --with pydantic --with requests mcp run local_dev_server.py
+```
+
+Make sure to replace `repo_path` with the actual path to the repository.
 
 ## Building and Deploying
 
