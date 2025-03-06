@@ -1,5 +1,40 @@
+from mcp.server.fastmcp import FastMCP
+import requests
+from typing import Dict, Any
+import os
+from dotenv import load_dotenv
 from pydantic import BaseModel
 from enum import Enum
+
+# Get API key from environment variables
+load_dotenv()
+EXPLORIUM_API_KEY = os.environ.get("EXPLORIUM_API_KEY")
+BASE_URL = "https://api.explorium.ai/v1"
+
+mcp = FastMCP("Explorium", dependencies=["requests", "pydantic", "dotenv"])
+
+
+def make_api_request(url, payload, headers=None):
+    """Helper function to make API requests with consistent error handling"""
+    if headers is None:
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api_key": EXPLORIUM_API_KEY,
+        }
+
+    try:
+        serializable_payload = pydantic_model_to_serializable(payload)
+        response = requests.post(
+            f"{BASE_URL}/{url}", json=serializable_payload, headers=headers
+        )
+        # response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        return {
+            "error": str(e),
+            "status_code": getattr(e.response, "status_code", None),
+        }
 
 
 def get_filters_payload(filters) -> dict:
