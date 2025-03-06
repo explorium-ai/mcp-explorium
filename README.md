@@ -1,6 +1,8 @@
 # Explorium API MCP Server
 This MCP server is used to interact with the Explorium API.
 
+Note: this is the README for developing the MCP server. For usage instructions, see the [README-pypi.md](README-pypi.md).
+
 ## Setup
 
 Clone the repository:
@@ -14,13 +16,8 @@ Install uv and activate the virtual environment:
 
 ```bash
 pip install uv
-uv sync
+uv sync --dev
 ```
-
-
-## Tools
-
-The MCP server provides tools for the Business and Prospect APIs described in the [Explorium API documentation](https://developers.explorium.ai/reference/getting-started-with-explorium-admin).
 
 ## Usage with Claude Desktop
 
@@ -40,16 +37,16 @@ Then, add this entry to your `claude_desktop_config.json` file:
 {
   "mcpServers": {
     "Explorium": {
-      "command": "/Users/yotamfrid/.local/bin/uv",
+      "command": "<UV_INSTALL_PATH>",
       "args": [
         "run",
         "--directory",
-        "/Users/yotamfrid/work/explorium-ai/mcp-explorium",
+        "<REPOSITORY_PATH>",
         "--with",
         "mcp",
         "mcp",
         "run",
-        "src/mcp_explorium/server.py"
+        "src/explorium_mcp_server/__main__.py"
       ],
       "env": {
         "EXPLORIUM_API_KEY": "<EXPLORIUM_API_KEY>"
@@ -60,3 +57,14 @@ Then, add this entry to your `claude_desktop_config.json` file:
 ```
 
 Be sure to replace all the `<PLACEHOLDERS>` with the actual values.
+
+## Building the MCP server
+
+To build the MCP server, run:
+
+```bash
+uv sync
+python3 -m build
+```
+
+This will create a `dist` directory with the built package.

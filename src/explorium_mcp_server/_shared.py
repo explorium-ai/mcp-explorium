@@ -2,12 +2,10 @@ from mcp.server.fastmcp import FastMCP
 import requests
 from typing import Dict, Any
 import os
-from dotenv import load_dotenv
 from pydantic import BaseModel
 from enum import Enum
 
 # Get API key from environment variables
-load_dotenv()
 EXPLORIUM_API_KEY = os.environ.get("EXPLORIUM_API_KEY")
 BASE_URL = "https://api.explorium.ai/v1"
 
