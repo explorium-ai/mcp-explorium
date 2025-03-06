@@ -79,15 +79,20 @@ class CompanyAge(str, Enum):
 
 
 class FetchBusinessesFilters(BaseModel):
-    """Business search filters."""
+    """
+    Business search filters.
+    Before calling a tool that uses this filter, call the autocomplete tool to get the list of available values,
+    especially when using linkedin_category, google_category, naics_category, and region_country_code.
+    Only one category can be present at a time (google_category, naics_category, or linkedin_category).
+    """
 
     country_code: None | list[str] = Field(
         default=None,
-        description="A list of lowercase two-letter ISO country codes. Example: ['us', 'ca'] will return businesses from United States and Canada only.",
+        description="A list of lowercase two-letter ISO country codes.",
     )
     region_country_code: None | list[str] = Field(
         default=None,
-        description="A list of lowercase region-country codes in the format 'REGION-CC' where CC is the two-letter ISO country code. Example: ['na-us', 'eu-fr'] will return businesses from North America-United States and Europe-France.",
+        description="A list of lowercase region-country codes in the format 'REGION-CC' where CC is the two-letter ISO country code.",
     )
     company_size: None | list[CompanySize] = Field(
         default=None, description="Filters accounts based on the number of employees."
@@ -100,7 +105,7 @@ class FetchBusinessesFilters(BaseModel):
     )
     google_category: None | list[str] = Field(
         default=None,
-        description='Filters accounts by categories as classified in Google. Example: ["paving contractor", "retail"]',
+        description="Filters accounts by categories as classified in Google.",
     )
     naics_category: None | list[str] = Field(
         default=None,
@@ -108,7 +113,7 @@ class FetchBusinessesFilters(BaseModel):
     )
     linkedin_category: None | list[str] = Field(
         default=None,
-        description='Filters accounts by categories as used in LinkedIn. Example: ["software development", "investment banking"]',
+        description="Filters accounts by categories as used in LinkedIn.",
     )
 
 

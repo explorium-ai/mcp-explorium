@@ -3,10 +3,12 @@ from _shared import (
     make_api_request,
     enum_list_to_serializable,
     get_filters_payload,
+    BASE_URL,
+    EXPLORIUM_API_KEY,
 )
 import models
 from pydantic import conlist, Field
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Literal
 from functools import partial
 
 business_ids_field = partial(
@@ -52,6 +54,15 @@ def fetch_businesses(
 ):
     """
     Fetch businesses from the Explorium API filtered by various criteria.
+    You MUST call the autocomplete tool to get the list of possible values for
+    filters specified in the autocomplete tool's description.
+
+    Do NOT use this tool first if you do not have a list of available values for
+    mandatory filters specified in the autocomplete tool's description.
+
+    This tool returns Business IDs, which can be used to fetch more information.
+    Do NOT call match_businesses afterwards if the response already contains
+    business IDs.
     """
     payload = {
         "mode": "full",
@@ -63,6 +74,58 @@ def fetch_businesses(
     }
 
     return make_api_request("businesses", payload)
+
+
+import requests
+
+
+@mcp.tool()
+def autocomplete(
+    field: Literal[
+        "country",
+        "country_code",
+        "region_country_code",
+        "google_category",
+        "naics_category",
+        "linkedin_category",
+        "company_tech_stack_tech",
+        "job_title",
+        "company_size",
+        "company_revenue",
+        "company_age",
+        "job_department",
+        "job_level",
+    ],
+    query: str | int = Field(description="The query to autocomplete"),
+):
+    """
+    Autocomplete values for various business fields based on a query string.
+    You MUST call this tool before using any of the following filters:
+    - linkedin_category
+    - google_category
+    - naics_category
+    - region_country_code
+
+    Do NOT use this tool if you already have a list of available values
+    for emum fields, such as:
+    - company_size
+    - company_age
+    - company_revenue
+
+    Hints:
+    - When looking for 'saas' in categories, use 'software'
+    """
+    headers = {
+        "accept": "application/json",
+        "api_key": EXPLORIUM_API_KEY,
+    }
+
+    response = requests.get(
+        f"{BASE_URL}/businesses/autocomplete",
+        headers=headers,
+        params={"field": field, "query": query},
+    )
+    return response.json()
 
 
 @mcp.tool()
