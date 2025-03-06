@@ -87,7 +87,7 @@ or if the virtual environment is not activated.
 
 ## Building and Deploying
 
-To build the MCP server, run:
+To build the MCP server, bump the version in `pyproject.toml`, then run:
 
 ```bash
 uv build
