@@ -7,13 +7,13 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/explorium-ai/mcp-explorium.git
+cd mcp-explorium
 ```
 
 Install uv and activate the virtual environment:
 
 ```bash
 pip install uv
-
 uv sync
 ```
 
