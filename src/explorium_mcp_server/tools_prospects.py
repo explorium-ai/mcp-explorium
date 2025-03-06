@@ -19,11 +19,12 @@ prospect_ids_field = partial(
 def match_prospects(
     prospects_to_match: conlist(
         models.prospects.ProspectMatchInput, min_length=1, max_length=40
-    )
+    ),
 ):
     """
     Get the Explorium prospect ID from a prospect's email, full name, and company.
     At least email OR (full name AND company) must be provided.
+    You MUST use this tool if the input is about someone working at a specific company.
 
     Use this when:
     - Need prospect enrichment tools
@@ -48,10 +49,12 @@ def match_prospects(
 def fetch_prospects(
     filters: models.prospects.FetchProspectsFilters,
     size: int = Field(
-        default=100, le=1000, description="The number of prospects to return"
+        default=1000, le=1000, description="The number of prospects to return"
     ),
     page_size: int = Field(
-        default=100, le=100, description="The number of prospects to return per page"
+        default=100,
+        le=100,
+        description="The number of prospects to return per page - recommended: 100",
     ),
     page: int = Field(default=1, description="The page number to return"),
 ):
@@ -60,9 +63,11 @@ def fetch_prospects(
     If looking for prospects from a specific business, use the business_id filter.
 
     Use this when:
-    - Performing sales intelligence research
-    - Identifying high-value prospects
+    - Need to find employee at a company with specific filters, such as job level, department, or other professional attributesa
+    - Looking for leadership at a company
     - Enacting prospecting workflows
+
+    You MUST call this tool if one or more company's employees are needed.
 
     This tool returns Prospect IDs, which can be used to fetch more information.
     Do NOT call match_prospects afterwards if the response already contains
@@ -108,7 +113,7 @@ def fetch_prospects_events(
 
 @mcp.tool()
 def enrich_prospects_contacts_information(
-    prospect_ids: conlist(str, min_length=1, max_length=50) = prospect_ids_field()
+    prospect_ids: conlist(str, min_length=1, max_length=50) = prospect_ids_field(),
 ):
     """
     Enrich prospect contact information with additional details.
@@ -124,7 +129,7 @@ def enrich_prospects_contacts_information(
 
 @mcp.tool()
 def enrich_prospects_linkedin_posts(
-    prospect_ids: conlist(str, min_length=1, max_length=50) = prospect_ids_field()
+    prospect_ids: conlist(str, min_length=1, max_length=50) = prospect_ids_field(),
 ):
     """
     Enrich prospect LinkedIn posts with additional details.
@@ -142,7 +147,7 @@ def enrich_prospects_linkedin_posts(
 
 @mcp.tool()
 def enrich_prospects_profiles(
-    prospect_ids: conlist(str, min_length=1, max_length=50) = prospect_ids_field()
+    prospect_ids: conlist(str, min_length=1, max_length=50) = prospect_ids_field(),
 ):
     """
     Get detailed profile information for prospects.

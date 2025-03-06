@@ -21,7 +21,7 @@ business_ids_field = partial(
 def match_businesses(
     businesses_to_match: conlist(
         models.businesses.MatchBusinessInput, min_length=1, max_length=50
-    )
+    ),
 ):
     """
     Get the Explorium business IDs from business name and/or domain in bulk.
@@ -64,6 +64,11 @@ def fetch_businesses(
     This tool returns Business IDs, which can be used to fetch more information.
     Do NOT call match_businesses afterwards if the response already contains
     business IDs.
+
+    If a requested filter is not supported by the Explorium API, stop the
+    execution and notify the user.
+
+    If you are looking for employees at a company, use fetch_prospects next.
     """
     payload = {
         "mode": "full",
@@ -143,6 +148,8 @@ def fetch_businesses_events(
     Retrieves business-related events from the Explorium API in bulk.
     If you're looking for events related to role changes, you should use the
     prospects events tool instead.
+
+    This is a VERY useful tool for researching a company's events and history.
     """
     payload = {
         "business_ids": business_ids,
@@ -174,7 +181,7 @@ def fetch_businesses_statistics(
 
 @mcp.tool()
 def enrich_businesses_firmographics(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get firmographics data in bulk.
@@ -189,6 +196,10 @@ def enrich_businesses_firmographics(
     - Company size (number of employees range)
     - Annual revenue range
     - LinkedIn industry category and profile URL
+
+    Do NOT use when:
+    - You need to find a specific employee at a company
+    - Looking for leadership info of a company
     """
     return make_api_request(
         "businesses/firmographics/bulk_enrich",
@@ -198,7 +209,7 @@ def enrich_businesses_firmographics(
 
 @mcp.tool()
 def enrich_businesses_technographics(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get technographics data in bulk.
@@ -237,7 +248,7 @@ def enrich_businesses_technographics(
 
 @mcp.tool()
 def enrich_businesses_company_ratings(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get internal company ratings in bulk.
@@ -274,6 +285,7 @@ def enrich_businesses_financial_metrics(
     - Peer companies for competitive analysis
     - Total shareholder return (TSR) metrics for various time periods
 
+    Do use this for finding leadership at a company.
     """
     payload = {"business_ids": business_ids}
     if date:
@@ -284,7 +296,7 @@ def enrich_businesses_financial_metrics(
 
 @mcp.tool()
 def enrich_businesses_funding_and_acquisitions(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get businesses funding and acquisition history in bulk.
@@ -306,7 +318,7 @@ def enrich_businesses_funding_and_acquisitions(
 
 @mcp.tool()
 def enrich_businesses_challenges(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get insights on the challenges, breaches, and competition of public companies.
@@ -329,7 +341,7 @@ def enrich_businesses_challenges(
 
 @mcp.tool()
 def enrich_businesses_competitive_landscape(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get insights on the market landscape of public companies.
@@ -348,7 +360,7 @@ def enrich_businesses_competitive_landscape(
 
 @mcp.tool()
 def enrich_businesses_strategic_insights(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get strategic insights for public companies.
@@ -361,6 +373,8 @@ def enrich_businesses_strategic_insights(
     - Company identifiers including ticker symbols and CIK numbers
     - Links to official SEC filings and documents
     - Filing dates and form types for regulatory submissions
+
+    Do NOT use this when you need to find employees at a company.
     """
     return make_api_request(
         "businesses/pc_strategy_10k/bulk_enrich",
@@ -370,7 +384,7 @@ def enrich_businesses_strategic_insights(
 
 @mcp.tool()
 def enrich_businesses_workforce_trends(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get workforce trends and department composition for companies.
@@ -390,7 +404,7 @@ def enrich_businesses_workforce_trends(
 
 @mcp.tool()
 def enrich_businesses_linkedin_posts(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field()
+    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get LinkedIn posts for public companies.

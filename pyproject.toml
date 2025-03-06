@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "explorium-mcp-server"
-version = "0.1.1"
+version = "0.1.2"
 description = "MCP server for interacting with the Explorium API."
 readme = "README-pypi.md"
 requires-python = ">=3.10"
