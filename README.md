@@ -16,7 +16,7 @@ Install uv and activate the virtual environment:
 
 ```bash
 pip install uv
-uv sync --dev
+uv sync --group dev
 ```
 
 ## Usage with Claude Desktop
@@ -60,11 +60,11 @@ Be sure to replace all the `<PLACEHOLDERS>` with the actual values.
 
 ## Building the MCP server
 
-To build the MCP server, run:
+Build and deploy the MCP server to PyPI:
 
 ```bash
-uv sync
-python3 -m build
+uv build
+twine upload dist/*
 ```
 
 This will create a `dist` directory with the built package.
