@@ -103,3 +103,41 @@ class ProspectMatchInput(BaseModel):
     business_id: str | None = Field(
         default=None, description="Filters the prospect to match the given business id."
     )
+
+
+class ProspectEventType(str, Enum):
+    """
+    Valid event types for the Explorium Prospects Events API.
+
+    JOB_TITLE_CHANGE: Individual transitioned to a new job title within their current company
+    - previous_job_title: str - Employee's previous job title
+    - event_time: datetime - Employee left previous role timestamp
+    - current_job_title: str - Employee's current job title
+    - current_company_name: str - Employee's current workplace
+    - current_company_id: str - Current workplace entity ID
+    - event_id: str - Job change event ID
+
+    COMPANY_CHANGE: Individual transitioned to a new company
+    - previous_company_name: str - Employee's previous workplace name
+    - previous_company_id: str - Previous workplace entity ID
+    - previous_job_title: str - Employee's previous job title
+    - event_time: datetime - Employee left previous company timestamp
+    - current_company_name: str - Employee's current workplace name
+    - current_company_id: str - Current workplace entity ID
+    - current_job_title: str - Employee's current job title
+    - event_id: str - Company change event ID
+
+    WORKPLACE_ANNIVERSARY: Individual reached an annual milestone at their current company.
+    - full_name: str - Employee's full name
+    - event_id: str - Employee event ID
+    - company_name: str - Workplace company name
+    - years_at_company: int - Number of years at company
+    - job_title: str - Employee's job title
+    - job_anniversary_date: datetime - Employee event timestamp
+    - event_time: datetime - Workplace anniversary date
+    - linkedin_url: str - Employee LinkedIn URL
+    """
+
+    JOB_TITLE_CHANGE = "prospect_changed_role"
+    COMPANY_CHANGE = "prospect_changed_company"
+    WORKPLACE_ANNIVERSARY = "prospect_job_start_anniversary"

@@ -69,21 +69,10 @@ def fetch_businesses_events(
 ) -> Dict[str, Any]:
     """
     Retrieves business-related events from the Explorium API in bulk.
-
-    This function fetches various business events such as funding rounds,
-    IPO announcements, new offices, and job market shifts.
     """
-    # Basic validation
-    if not business_ids:
-        raise ValueError("business_ids cannot be empty")
-
-    if not event_types:
-        raise ValueError("event_types cannot be empty")
-
-    # Prepare request
     payload = {
-        "event_types": enum_list_to_serializable(event_types),
         "business_ids": business_ids,
+        "event_types": enum_list_to_serializable(event_types),
         "timestamp_from": timestamp_from,
     }
 
@@ -346,12 +335,11 @@ def enrich_businesses_linkedin_posts(
     - Historical social media content for trend analysis
     - Marketing messaging and brand voice examples
     - Product announcements and company updates
-"""
+    """
     return make_api_request(
         "businesses/linkedin_posts/bulk_enrich",
         {"business_ids": business_ids},
     )
-
 
 
 @mcp.tool()
