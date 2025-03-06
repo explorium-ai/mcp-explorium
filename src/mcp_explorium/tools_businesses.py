@@ -135,10 +135,13 @@ def fetch_businesses_events(
         description="List of event types to fetch"
     ),
     timestamp_from: str = Field(description="ISO 8601 timestamp"),
-    timestamp_to: str | None = Field(default=None, description="ISO 8601 timestamp"),
+    # TODO: This is not implemented yet
+    # timestamp_to: str | None = Field(default=None, description="ISO 8601 timestamp"),
 ) -> Dict[str, Any]:
     """
     Retrieves business-related events from the Explorium API in bulk.
+    If you're looking for events related to role changes, you should use the
+    prospects events tool instead.
     """
     payload = {
         "business_ids": business_ids,
@@ -146,8 +149,8 @@ def fetch_businesses_events(
         "timestamp_from": timestamp_from,
     }
 
-    if timestamp_to:
-        payload["timestamp_to"] = timestamp_to
+    # if timestamp_to:
+    #     payload["timestamp_to"] = timestamp_to
 
     return make_api_request("businesses/events", payload)
 

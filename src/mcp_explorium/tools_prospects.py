@@ -1,4 +1,9 @@
-from _shared import mcp, make_api_request, get_filters_payload
+from _shared import (
+    mcp,
+    make_api_request,
+    get_filters_payload,
+    enum_list_to_serializable,
+)
 from pydantic import conlist, Field
 from typing import List
 import models
@@ -57,6 +62,10 @@ def fetch_prospects(
     - Performing sales intelligence research
     - Identifying high-value prospects
     - Enacting prospecting workflows
+
+    This tool returns Prospect IDs, which can be used to fetch more information.
+    Do NOT call match_prospects afterwards if the response already contains
+    prospect IDs.
     """
 
     data = {
@@ -80,6 +89,9 @@ def fetch_prospects_events(
 ):
     """
     Retrieves prospect-related events from the Explorium API in bulk.
+    Use this when querying for prospect-related events about businesses:
+    Example workflow:
+    Fetch businesses > Fetch prospects > Fetch prospects events
     """
     payload = {
         "prospect_ids": prospect_ids,
