@@ -58,13 +58,19 @@ Then, add this entry to your `claude_desktop_config.json` file:
 
 Be sure to replace all the `<PLACEHOLDERS>` with the actual values.
 
-## Building the MCP server
+## Building and Deploying
 
-Build and deploy the MCP server to PyPI:
+To build the MCP server, run:
 
 ```bash
 uv build
-twine upload dist/*
 ```
 
 This will create a `dist` directory with the built package.
+
+You may then deploy the package to PyPI using the following command:
+
+```bash
+twine upload dist/*
+```
+
