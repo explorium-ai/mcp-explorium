@@ -28,9 +28,13 @@ def match_prospects(
 
     Use this when:
     - Need prospect enrichment tools
-    - Getting a prospect's contact information
+    - Getting contact information
     - Analyzing an individual's social media presence
     - Gathering information on a person's professional profile and workplace
+
+    Do NOT use for:
+    - Finding leadership information (CEO, CTO, CFO, etc.)
+    - Looking for employees at a company
     """
     for prospect_to_match in prospects_to_match:
         if not prospect_to_match.email and (
@@ -60,14 +64,11 @@ def fetch_prospects(
 ):
     """
     Get a list of prospects according to filters such as job level, department, or other professional attributes.
+    Do NOT use this tool if looking for leadership (CEO, CTO, CFO, etc.) before
+    using enrich_businesses_financial_metrics.
+
     If looking for prospects from a specific business, use the business_id filter.
-
-    Use this when:
-    - Need to find employee at a company with specific filters, such as job level, department, or other professional attributesa
-    - Looking for leadership at a company
-    - Enacting prospecting workflows
-
-    You MUST call this tool if one or more company's employees are needed.
+    If an enrichment did not return the information you need, use this tool to find prospects/employees.
 
     This tool returns Prospect IDs, which can be used to fetch more information.
     Do NOT call match_prospects afterwards if the response already contains

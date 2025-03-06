@@ -275,6 +275,8 @@ def enrich_businesses_financial_metrics(
 ):
     """
     Get financial metrics for public companies in bulk.
+    You MUST use this tool when looking for leadership information (CEO, CTO, CFO, etc.)
+
     Returns:
     - Financial metrics including EBITDA, revenue, and cost of goods sold (COGS)
     - Profitability indicators like ROA (Return on Assets) and ROC (Return on Capital)
@@ -285,7 +287,8 @@ def enrich_businesses_financial_metrics(
     - Peer companies for competitive analysis
     - Total shareholder return (TSR) metrics for various time periods
 
-    Do use this for finding leadership at a company.
+    This tool is useful for finding leadership information.
+    You MUST try this tool once if you need to find leadership/executives/VPs.
     """
     payload = {"business_ids": business_ids}
     if date:
