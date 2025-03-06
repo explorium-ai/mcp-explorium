@@ -2,6 +2,11 @@ from _shared import mcp, make_api_request, get_filters_payload
 from pydantic import conlist, Field
 from typing import List
 import models
+from functools import partial
+
+prospect_ids_field = partial(
+    Field, description="List of up to 50 Explorium prospect IDs from match_prospects"
+)
 
 
 @mcp.tool()
@@ -67,8 +72,10 @@ def fetch_prospects(
 
 @mcp.tool()
 def fetch_prospects_events(
-    prospect_ids: conlist(str, min_length=1, max_length=20),
-    event_types: List[models.prospects.ProspectEventType],
+    prospect_ids: conlist(str, min_length=1, max_length=20) = prospect_ids_field(),
+    event_types: List[models.prospects.ProspectEventType] = Field(
+        description="List of event types to fetch"
+    ),
     timestamp_from: str = Field(description="ISO 8601 timestamp"),
 ):
     """
@@ -84,12 +91,6 @@ def fetch_prospects_events(
 
 
 # Enrichment tools
-
-from functools import partial
-
-prospect_ids_field = partial(
-    Field, description="List of up to 50 Explorium prospect IDs from match_prospects"
-)
 
 
 @mcp.tool()

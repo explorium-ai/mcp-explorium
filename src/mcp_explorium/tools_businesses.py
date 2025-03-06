@@ -7,6 +7,11 @@ from _shared import (
 import models
 from pydantic import conlist, Field
 from typing import List, Dict, Any
+from functools import partial
+
+business_ids_field = partial(
+    Field, description="List of Explorium business IDs from match_businesses"
+)
 
 
 @mcp.tool()
@@ -62,8 +67,10 @@ def fetch_businesses(
 
 @mcp.tool()
 def fetch_businesses_events(
-    business_ids: List[str],
-    event_types: List[models.businesses.BusinessEventType],
+    business_ids: conlist(str, min_length=1, max_length=20) = business_ids_field(),
+    event_types: List[models.businesses.BusinessEventType] = Field(
+        description="List of event types to fetch"
+    ),
     timestamp_from: str = Field(description="ISO 8601 timestamp"),
     timestamp_to: str | None = Field(default=None, description="ISO 8601 timestamp"),
 ) -> Dict[str, Any]:
@@ -96,12 +103,6 @@ def fetch_businesses_statistics(
 
 
 # Enrichment tools
-
-from functools import partial
-
-business_ids_field = partial(
-    Field, description="List of up to 50 Explorium business IDs from match_businesses"
-)
 
 
 @mcp.tool()
