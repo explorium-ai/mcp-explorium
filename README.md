@@ -3,8 +3,13 @@ This MCP server is used to interact with the Explorium API.
 
 ## Setup
 
-This project uses `uv` to manage dependencies and run the server.
-To get started, install it and activate the virtual environment:
+Clone the repository:
+
+```bash
+git clone https://github.com/explorium-ai/mcp-explorium.git
+```
+
+Install uv and activate the virtual environment:
 
 ```bash
 pip install uv

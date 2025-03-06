@@ -1,7 +1,7 @@
 [project]
 name = "mcp-explorium"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.0.1"
+description = "MCP server for the Explorium API"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
