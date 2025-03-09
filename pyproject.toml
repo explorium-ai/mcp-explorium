@@ -12,6 +12,9 @@ dependencies = [
     "requests>=2.32.3",
 ]
 
+[project.scripts]
+explorium-mcp-server = "explorium_mcp_server.__main__:main"
+
 [dependency-groups]
 dev = [
     "build>=1.2.2.post1",
