@@ -64,15 +64,9 @@ def fetch_prospects(
 ):
     """
     Get a list of prospects according to filters such as job level, department, or other professional attributes.
-    Do NOT use this tool if looking for leadership (CEO, CTO, CFO, etc.) before
-    using enrich_businesses_financial_metrics.
+    For leadership information, consider using enrich_businesses_financial_metrics first.
 
-    If looking for prospects from a specific business, use the business_id filter.
-    If an enrichment did not return the information you need, use this tool to find prospects/employees.
-
-    This tool returns Prospect IDs, which can be used to fetch more information.
-    Do NOT call match_prospects afterwards if the response already contains
-    prospect IDs.
+    Use this tool to find prospects/employees at a specific company.
     """
 
     data = {

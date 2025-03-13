@@ -29,12 +29,13 @@ def match_businesses(
     - Need company size/revenue/industry
     - Analyzing overall business metrics
     - Researching company background
-
+    - Looking for specific employees (use fetch_prospects next)
 
     Do NOT use when:
     - Looking for specific employees
     - Getting executive contact info
     - Finding team member details
+    - You already called fetch_businesses - the response already contains business IDs
     """
     return make_api_request(
         "businesses/match",
@@ -62,8 +63,7 @@ def fetch_businesses(
     mandatory filters specified in the autocomplete tool's description.
 
     This tool returns Business IDs, which can be used to fetch more information.
-    Do NOT call match_businesses afterwards if the response already contains
-    business IDs.
+    Do NOT call match_businesses afterwards.
 
     If a requested filter is not supported by the Explorium API, stop the
     execution and notify the user.
@@ -110,6 +110,8 @@ def autocomplete(
     - google_category
     - naics_category
     - region_country_code
+
+    Prefer to use linkedin_category over google_category.
 
     Do NOT use this tool if you already have a list of available values
     for emum fields, such as:
@@ -275,7 +277,7 @@ def enrich_businesses_financial_metrics(
 ):
     """
     Get financial metrics for public companies in bulk.
-    You MUST use this tool when looking for leadership information (CEO, CTO, CFO, etc.)
+    You may also use this tool when looking for leadership information (CEO, CTO, CFO, etc.)
 
     Returns:
     - Financial metrics including EBITDA, revenue, and cost of goods sold (COGS)
@@ -286,9 +288,6 @@ def enrich_businesses_financial_metrics(
     - Earnings surprises with actual vs. estimated results
     - Peer companies for competitive analysis
     - Total shareholder return (TSR) metrics for various time periods
-
-    This tool is useful for finding leadership information.
-    You MUST try this tool once if you need to find leadership/executives/VPs.
     """
     payload = {"business_ids": business_ids}
     if date:
