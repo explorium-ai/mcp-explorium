@@ -3,6 +3,7 @@ from ._shared import (
     mcp,
     make_api_request,
     enum_list_to_serializable,
+    pydantic_model_to_serializable,
     get_filters_payload,
     BASE_URL,
     EXPLORIUM_API_KEY,
@@ -73,7 +74,10 @@ def fetch_businesses(
     payload = {
         "mode": "full",
         "size": size,
-        "page_size": page_size,
+        "page_size": min(
+            pydantic_model_to_serializable(page_size),
+            pydantic_model_to_serializable(size),
+        ),
         "page": page,
         "filters": get_filters_payload(filters),
         "request_context": {},

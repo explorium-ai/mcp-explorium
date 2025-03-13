@@ -46,7 +46,9 @@ def get_filters_payload(filters) -> dict:
     """
     request_filters = {}
 
-    for field, value in filters.model_dump(exclude_none=True).items():
+    for field, value in pydantic_model_to_serializable(
+        filters, exclude_none=True
+    ).items():
         if isinstance(value, list):
             if isinstance(value[0], Enum):
                 request_filters[field] = {
@@ -76,13 +78,23 @@ def enum_list_to_serializable(enum_list: list[Enum]):
     return [str(item.value) for item in enum_list]
 
 
-def pydantic_model_to_serializable(model: BaseModel | list[BaseModel] | dict):
+def pydantic_model_to_serializable(
+    model: BaseModel | list[BaseModel] | dict, exclude_none=False
+):
     # Recursively convert all Pydantic models in the object to dicts
-    if isinstance(model, BaseModel):
-        return model.model_dump()
+    if isinstance(model, BaseModel) and hasattr(model, "model_dump"):
+        return model.model_dump(exclude_none=exclude_none)
+    elif hasattr(model, "default"):
+        return model.default
     elif isinstance(model, list):
-        return [pydantic_model_to_serializable(item) for item in model]
+        return [
+            pydantic_model_to_serializable(item, exclude_none=exclude_none)
+            for item in model
+        ]
     elif isinstance(model, dict):
-        return {k: pydantic_model_to_serializable(v) for k, v in model.items()}
+        return {
+            k: pydantic_model_to_serializable(v, exclude_none=exclude_none)
+            for k, v in model.items()
+        }
     else:
         return model
