@@ -142,10 +142,15 @@ def create_research_session(
     mandatory filters specified in the autocomplete tool's description.
 
     Returns the session ID, which can be used to load more results.
+    The data is not returned to save tokens. Use session_view_data to get the final results.
     """
     session = ResearchSession(filters, max_results)
     research_sessions[session.session_id] = session
-    return {"session_id": session.session_id}
+    session_load_more_results(session.session_id)
+    return {
+        "session_id": session.session_id,
+        "session_details": get_session_details(session.session_id),
+    }
 
 
 @research_mcp.tool()
@@ -190,9 +195,11 @@ def session_load_more_results(session_id: str):
 
 
 @research_mcp.tool()
-def session_get_results(session_id: str):
+def session_view_data(session_id: str):
     """
-    Get the results of a research session.
+    Get the final results of a research session.
+    This will return the results of the research session as a list of business objects.
+    Do NOT use this tool until the end of your research session.
     session_id (str): The ID of the research session to get results for.
     """
     session = research_sessions[session_id]
@@ -272,6 +279,8 @@ def session_enrich(
                 session.results[result["business_id"]].enrichments[
                     enrichment_type
                 ] = result
+
+    print("Enrichment complete.")
 
 
 # Update the session_enrich docstring with the formatted documentation
