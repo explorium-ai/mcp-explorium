@@ -50,6 +50,8 @@ def get_filters_payload(filters) -> dict:
         filters, exclude_none=True
     ).items():
         if isinstance(value, list):
+            if len(value) == 0:
+                continue
             if isinstance(value[0], Enum):
                 request_filters[field] = {
                     "type": "includes",
