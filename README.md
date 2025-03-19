@@ -85,6 +85,21 @@ confirming under `Cursor > Settings > Cursor Settings > Features > Chat > Enable
 **Note:** local usage will not work if dev dependencies are not installed,
 or if the virtual environment is not activated.
 
+## LangGraph Agent
+
+The `research_agent.py` file contains a LangGraph agent that can be used to interact with the Explorium API.
+
+Because of its multi-agent nature, you must configure an ANTHROPIC_API_KEY environment variable,
+which you can put inside of `.env`.
+
+To start using the agent:
+
+```bash
+uv sync --group agent
+
+langgraph dev
+```
+
 ## Building and Deploying
 
 To build the MCP server, bump the version in `pyproject.toml`, then run:
