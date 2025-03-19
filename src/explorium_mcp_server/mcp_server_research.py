@@ -109,7 +109,63 @@ class ResearchSession:
             self.total_results = response["total_results"]
 
 
+import os
+import json
+
 research_sessions: Dict[str, ResearchSession] = {}
+
+
+def save_sessions():
+    serializable_sessions = {}
+    for session_id, session in research_sessions.items():
+        serializable_sessions[session_id] = {
+            "session_id": session.session_id,
+            "filters": pydantic_model_to_serializable(session.filters),
+            "max_results": session.max_results,
+            "results": {
+                bid: {
+                    "business_id": result.business_id,
+                    "data": pydantic_model_to_serializable(result.data),
+                    "enrichments": result.enrichments,
+                }
+                for bid, result in session.results.items()
+            },
+            "current_page_index": session.current_page_index,
+            "total_pages": session.total_pages,
+            "total_results": session.total_results,
+        }
+
+    with open("research_sessions.json", "w") as f:
+        json.dump(serializable_sessions, f)
+
+
+def load_sessions():
+    if os.path.exists("research_sessions.json"):
+        with open("research_sessions.json", "r") as f:
+            loaded_sessions = json.loads(f.read())
+            for session_id, session_data in loaded_sessions.items():
+                # Create a new session with the basic attributes
+                session = ResearchSession(
+                    filters=models.businesses.FetchBusinessesFilters(
+                        **session_data["filters"]
+                    ),
+                    max_results=session_data["max_results"],
+                )
+                # Restore other attributes
+                session.session_id = session_data["session_id"]
+                session.current_page_index = session_data["current_page_index"]
+                session.total_pages = session_data["total_pages"]
+                session.total_results = session_data["total_results"]
+
+                # Restore results
+                for bid, result_data in session_data["results"].items():
+                    session.results[bid] = ResearchSessionResult(
+                        business_id=result_data["business_id"],
+                        data=models.businesses.Business(**result_data["data"]),
+                        enrichments=result_data["enrichments"],
+                    )
+
+                research_sessions[session_id] = session
 
 
 class AutocompleteInput(BaseModel):
@@ -172,6 +228,7 @@ def create_research_session(
     session = ResearchSession(filters, max_results)
     research_sessions[session.session_id] = session
     session_load_more_results(session.session_id)
+    save_sessions()
     return {
         "session_id": session.session_id,
         "session_details": get_session_details(session.session_id),
@@ -215,9 +272,13 @@ def session_load_more_results(session_id: str):
         return {"error": f"Session {session_id} not found"}
     session = research_sessions[session_id]
     num_loaded_before = session.get_total_loaded_results()
-    num_loaded = session.load_more_results()
+    session.load_more_results()
     num_loaded_after = session.get_total_loaded_results()
     session_details = get_session_details(session_id)
+
+    if num_loaded_after - num_loaded_before > 0:
+        save_sessions()
+
     return {
         "message": f"Loaded {num_loaded_after - num_loaded_before} results for session {session_id}.",
         "session_details": session_details,
@@ -332,6 +393,7 @@ def session_enrich(
 
     # Return a sample of the data to see what was found
     if success_samples:
+        save_sessions()
         return {"sample_data": success_samples}
     else:
         return {"info": "All enrichments returned no results."}
@@ -342,6 +404,7 @@ session_enrich.__doc__ = session_enrich.__doc__.format(
     enrichment_docs=_format_enrichment_docs()
 )
 
+load_sessions()
 # Run the agent server
 if __name__ == "__main__":
     asyncio.run(research_mcp.run())
