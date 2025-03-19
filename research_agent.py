@@ -154,14 +154,9 @@ You are tasked with generating business search filters based on user description
     company_revenue: ["0-500K", "500k-1M", "1M-5M", "5M-10M", "10M-25M", "25M-75M", "75M-200M", "200M-500M", "500M-1B", "1B-10B", "10B-100B", "100B-1T", "1T-10T", "10T+"]
     company_age: ["0-3", "4-10", "11-20", "20+"]
 
-
-Response format:
-field: [values]
-
 Use short queries to ensure values the autocomplete tool returns values.
 Include ONLY filter fields and values returned by autocomplete or from the valid enum values.
 Never make up or assume values - only use exact matches from autocomplete results.
-Return only the results with no other text.
 
 Continually evaluate the results of the autocomplete tool you didn't miss anything from
 the input query.
@@ -172,14 +167,42 @@ REMEMBER: you must do your best to include all concepts from the input query in 
 If the user specified multiple industry categories, you must continually evaluate the results of the autocomplete tool
 to ensure you didn't miss anything from the input query. If you did, call the autocomplete tool again.
 
-Before returning the final output, clean the response so it's only fields and values.
+Return valid JSON and no other text.
 """
                 )
             ]
         },
         config={"configurable": {"thread_id": "1"}},
     )
-    return result["messages"][-1].content
+
+    response = result["messages"][-1].content
+    # return response
+    # # Use an LLM to clean the response so it's only fields and values.
+    clean_response = model.invoke(
+        [
+            HumanMessage(
+                content=f"""
+                Convert this response into valid JSON.
+                Acceptable fields are:
+                - country
+                - region_country_code
+                - google_category
+                - naics_category
+                - linkedin_category
+                - job_title
+                - company_size
+                - company_revenue
+                - company_age
+                - job_department
+                - job_level
+                Do not include any other text.
+                
+                {response}
+                """
+            ),
+        ]
+    )
+    return {"filters": clean_response.content}
 
 
 @asynccontextmanager
@@ -212,6 +235,9 @@ Present yourself as directly connected to Explorium's API, using phrases like:
 "I'm searching Explorium's database..."
 "Explorium has identified X matching companies..."
 "Would you like me to enrich this data with additional insights on...?"
+
+IMPORTANT: When using search sessions, you MUST use the filters returned by get_search_filters.
+Do not make up your own filters or use the filters from previous sessions.
 
 Make the demo experience interactive and impressive by highlighting the depth and breadth of Explorium's data capabilities while maintaining a conversational flow. Never mention specific tool names like "get_search_filters" - instead refer to "Explorium API" or "Explorium's database."
 """,
