@@ -290,6 +290,7 @@ dependencies = [
 
 [package.dev-dependencies]
 agent = [
+    { name = "langchain-core" },
     { name = "langchain-mcp-adapters" },
     { name = "langchain-openai" },
     { name = "langgraph" },
@@ -311,6 +312,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 agent = [
+    { name = "langchain-core", specifier = ">=0.3.45" },
     { name = "langchain-mcp-adapters", specifier = ">=0.0.4" },
     { name = "langchain-openai", specifier = ">=0.3.9" },
     { name = "langgraph", specifier = ">=0.3.16" },
