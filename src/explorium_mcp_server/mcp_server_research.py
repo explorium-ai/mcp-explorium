@@ -65,7 +65,7 @@ class ResearchSession:
         filters: models.businesses.FetchBusinessesFilters,
         max_results: int | None = None,
     ):
-        self.session_id = str(uuid.uuid4())
+        self.session_id = str(uuid.uuid4()[:8])  # Short session ID
         self.filters = filters
         self.max_results = max_results
         self.results: Dict[str, ResearchSessionResult] = {}
