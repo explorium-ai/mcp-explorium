@@ -295,19 +295,17 @@ def session_enrich(
         for i in range(0, len(business_ids), MAX_BUSINESSES_PER_ENRICH_CALL)
     ]
 
-    print(
-        f"Enriching {len(business_id_chunks)} chunks of {MAX_BUSINESSES_PER_ENRICH_CALL} businesses each..."
-    )
+    print(f"Enriching {len(business_id_chunks)} chunk(s)")
 
     success_samples = []
 
     # Parallelize the enrichment calls of each chunk, printing the progress
     for chunk_index, chunk in enumerate(business_id_chunks):
-        print(f"Enriching chunk {chunk_index + 1} of {len(business_id_chunks)}...")
+        print(f"Enriching chunk {chunk_index + 1} of {len(business_id_chunks)}")
         for enrichment_type in enrichment_types:
-            print(f"Enriching {enrichment_type} for {len(chunk)} businesses...")
+            print(f"Enriching {enrichment_type} ({len(chunk)} items)")
             results = ENRICHMENT_TOOLS[enrichment_type](chunk)
-            if not hasattr(results, "data") or results["data"] is None:
+            if not results or "data" not in results or results["data"] is None:
                 for business_id in chunk:
                     session.results[business_id].enrichments[enrichment_type] = {
                         "info": f"No {enrichment_type} results found"
