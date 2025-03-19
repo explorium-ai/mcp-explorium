@@ -142,32 +142,32 @@ You are tasked with generating business search filters based on user description
     b. For regions/states: use region_country_code
     c. For countries: use country_code
 
-
 3. You MUST call autocomplete separately for EACH distinct concept.
-4. For each concept, select only the most general matching category - avoid overly specific subcategories unless explicitly mentioned.
-5. Include ALL relevant concepts in your final filters, even if they seem secondary.
+
+4. Choose filters carefully:
+    a. Select only the most general matching category for each concept
+    b. Avoid overly specific subcategories unless explicitly mentioned
+    c. Do not add related categories that weren't mentioned in the description
+
+5. Include ALL relevant concepts from the input query in your final filters.
+
 6. Valid filter fields:
+    - linkedin_category (preferred), google_category, or naics_category (use only ONE)
+    - country_code: lowercase ISO 3166-1 alpha-2 codes (e.g., "us", "ca")
+    - region_country_code: lowercase ISO 3166-2 country-subdivision codes (e.g., "us-tx", "us-ca")
+    - company_size: ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5001-10000", "10001+"]
+    - company_revenue: ["0-500K", "500k-1M", "1M-5M", "5M-10M", "10M-25M", "25M-75M", "75M-200M", "200M-500M", "500M-1B", "1B-10B", "10B-100B"]
+    - company_age: ["0-3", "4-10", "11-20", "20+"]
 
-    linkedin_category (preferred), google_category, or naics_category (use only ONE)
-    region_country_code or country_code
-    company_size: ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5001-10000", "10001+"]
-    company_revenue: ["0-500K", "500k-1M", "1M-5M", "5M-10M", "10M-25M", "25M-75M", "75M-200M", "200M-500M", "500M-1B", "1B-10B", "10B-100B", "100B-1T", "1T-10T", "10T+"]
-    company_age: ["0-3", "4-10", "11-20", "20+"]
+Use short, focused queries with the autocomplete tool to get the most relevant results.
+Response format:
+Copyfield: [values]
 
-Use short queries to ensure values the autocomplete tool returns values.
-Include ONLY filter fields and values returned by autocomplete or from the valid enum values.
-Never make up or assume values - only use exact matches from autocomplete results.
-
-Continually evaluate the results of the autocomplete tool you didn't miss anything from
-the input query.
-
+Double-check your final filters to ensure you haven't missed any concepts from the input query.
+Include ONLY filter fields and values returned by autocomplete or from the valid enum values. No explanations or additional text.
 
 Query: {businesses_description}
-REMEMBER: you must do your best to include all concepts from the input query in the filters.
-If the user specified multiple industry categories, you must continually evaluate the results of the autocomplete tool
-to ensure you didn't miss anything from the input query. If you did, call the autocomplete tool again.
-
-Return valid JSON and no other text.
+REMEMBER: You must include ALL concepts from the input query in your filters. If multiple industry categories are mentioned, ensure all are represented.
 """
                 )
             ]
