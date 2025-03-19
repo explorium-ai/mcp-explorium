@@ -65,7 +65,7 @@ class ResearchSession:
         filters: models.businesses.FetchBusinessesFilters,
         max_results: int | None = None,
     ):
-        self.session_id = str(uuid.uuid4()[:8])  # Short session ID
+        self.session_id = str(str(uuid.uuid4())[:8])  # Short session ID
         self.filters = filters
         self.max_results = max_results
         self.results: Dict[str, ResearchSessionResult] = {}
@@ -324,7 +324,7 @@ def session_enrich(
     if success_samples:
         return {"sample_data": success_samples}
     else:
-        return {"info": "All enrichments failed"}
+        return {"info": "All enrichments returned no results."}
 
 
 # Update the session_enrich docstring with the formatted documentation
