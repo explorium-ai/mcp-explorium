@@ -6,9 +6,11 @@ dotenv.load_dotenv()
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from contextlib import asynccontextmanager
 import asyncio
 
 from langchain_mcp_adapters.tools import load_mcp_tools
+from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessageChunk
@@ -39,6 +41,8 @@ server_params = StdioServerParameters(
     ],
 )
 
+graph = None
+
 
 async def main():
     async with stdio_client(server_params) as (read, write):
@@ -50,7 +54,7 @@ async def main():
             tools = await load_mcp_tools(session)
 
             # Create and run the agent
-            graph = create_react_agent(
+            agent = create_react_agent(
                 model, tools, checkpointer=MemorySaver(), debug=True
             )
             inputs = {
@@ -65,7 +69,7 @@ async def main():
             }
 
             # Get the generator and print its contents
-            async for msg, metadata in graph.astream(
+            async for msg, metadata in agent.astream(
                 inputs,
                 stream_mode="messages",
                 config={"configurable": {"thread_id": "1"}},
@@ -77,6 +81,29 @@ async def main():
                     and metadata["langgraph_node"] == "tools"
                 ):
                     print(msg.content, end="|", flush=True)
+
+
+@asynccontextmanager
+async def make_graph():
+    async with MultiServerMCPClient(
+        {
+            "explorium": {
+                "command": uv_path,
+                # Make sure to update to the full absolute path to your math_server.py file
+                "args": [
+                    "run",
+                    "--directory",
+                    working_dir,
+                    "mcp",
+                    "run",
+                    "research_server.py",
+                ],
+                "transport": "stdio",
+            },
+        }
+    ) as client:
+        agent = create_react_agent(model, client.get_tools())
+        yield agent
 
 
 if __name__ == "__main__":

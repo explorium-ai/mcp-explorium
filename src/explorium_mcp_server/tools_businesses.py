@@ -115,13 +115,9 @@ def autocomplete(
     - naics_category
     - region_country_code
 
-    Prefer to use linkedin_category over google_category.
+    Use this tool to get a list of possible enum values for filters.
 
-    Do NOT use this tool if you already have a list of available values
-    for emum fields, such as:
-    - company_size
-    - company_age
-    - company_revenue
+    Prefer to use linkedin_category over google_category.
 
     Hints:
     - When looking for 'saas' in categories, use 'software'
