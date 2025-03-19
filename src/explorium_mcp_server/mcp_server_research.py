@@ -98,14 +98,14 @@ class ResearchSession:
         response = tools_businesses.fetch_businesses(
             self.filters, page=next_page_index, size=self.max_results
         )
-        if not response["data"]:
-            return
+        if "data" not in response or not response["data"]:
+            raise Exception(f"Error! {str(response)}")
         for business in response["data"]:
             result = ResearchSessionResult(
                 business_id=business["business_id"],
                 data=business,
                 enrichments={},
-                events={},
+                events=[],
             )
             self.results[business["business_id"]] = result
         self.current_page_index = next_page_index
@@ -385,6 +385,10 @@ def session_enrich(
     enrichment_types: List[EnrichmentType] = Field(
         description="The types of enrichment to perform.", min_length=1, max_length=5
     ),
+    return_results: bool = Field(
+        description="If true, the results will be returned. If false, the results will be saved to the session.",
+        default=False,
+    ),
 ):
     """
     Enrich the businesses in the given research session.
@@ -440,8 +444,14 @@ def session_enrich(
 
     # Return a sample of the data to see what was found
     if success_samples:
-        save_sessions()
-        return {"info": "Successfully enriched businesses."}
+        if return_results:
+            return {
+                "info": "Successfully enriched businesses.",
+                "results": success_samples,
+            }
+        else:
+            save_sessions()
+            return {"info": "Successfully enriched businesses."}
     else:
         return {"info": "All enrichments returned no results."}
 
@@ -461,6 +471,10 @@ def session_fetch_events(
         description="List of event types to fetch"
     ),
     timestamp_from: str = Field(description="ISO 8601 timestamp"),
+    return_results: bool = Field(
+        description="If true, the results will be returned. If false, the results will be saved to the session.",
+        default=False,
+    ),
 ):
     """
     Fetch events for all businesses in the given research session.
@@ -502,7 +516,13 @@ def session_fetch_events(
 
     if success_samples:
         save_sessions()
-        return {"info": f"Successfully fetched {len(success_samples)} events."}
+        if return_results:
+            return {
+                "info": f"Successfully fetched {len(success_samples)} events.",
+                "results": success_samples,
+            }
+        else:
+            return {"info": f"Successfully fetched {len(success_samples)} events."}
     else:
         return {"info": "No events found for any businesses."}
 
