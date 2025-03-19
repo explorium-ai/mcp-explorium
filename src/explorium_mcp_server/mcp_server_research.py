@@ -1,5 +1,5 @@
 import asyncio
-import uuid
+import shortuuid
 from mcp.server.fastmcp import FastMCP
 from typing import List, Dict, Any, Literal
 from ._shared import pydantic_model_to_serializable
@@ -65,7 +65,7 @@ class ResearchSession:
         filters: models.businesses.FetchBusinessesFilters,
         max_results: int | None = None,
     ):
-        self.session_id = str(str(uuid.uuid4())[:8])  # Short session ID
+        self.session_id = shortuuid.ShortUUID().random(length=8)
         self.filters = filters
         self.max_results = max_results
         self.results: Dict[str, ResearchSessionResult] = {}
@@ -159,6 +159,8 @@ def create_research_session(
     Do NOT use this tool first if you do not have a list of available values for
     mandatory filters specified in the autocomplete tool's description.
 
+    Do not send empty values/lists for filters.
+
     Returns the session ID, which can be used to load more results.
     The data is not returned to save tokens. Use session_view_data to get the final results.
 
@@ -192,6 +194,8 @@ def get_session_details(session_id: str | None = None):
             for session in research_sessions.values()
         ]
     else:
+        if session_id not in research_sessions:
+            return {"error": f"Session {session_id} not found"}
         session = research_sessions[session_id]
         return {
             "session_id": session.session_id,
@@ -207,6 +211,8 @@ def session_load_more_results(session_id: str):
     Load the next page of businesses for the given research session.
     session_id (str): The ID of the research session to load more results for.
     """
+    if session_id not in research_sessions:
+        return {"error": f"Session {session_id} not found"}
     session = research_sessions[session_id]
     num_loaded_before = session.get_total_loaded_results()
     num_loaded = session.load_more_results()
@@ -226,6 +232,8 @@ def session_view_data(session_id: str):
     Do NOT use this tool until the end of your research session.
     session_id (str): The ID of the research session to get results for.
     """
+    if session_id not in research_sessions:
+        return {"error": f"Session {session_id} not found"}
     session = research_sessions[session_id]
     results = session.results
     return pydantic_model_to_serializable(results)
@@ -246,6 +254,8 @@ def get_business_id(session_id: str, name: str, domain: str):
     Get the business ID for a given name and domain.
     Only returns results for the given session.
     """
+    if session_id not in research_sessions:
+        return {"error": f"Session {session_id} not found"}
     session = research_sessions[session_id]
     for business_id, result in session.results.items():
         if result.data["name"] == name and result.data["domain"] == domain:
@@ -269,6 +279,8 @@ def session_enrich(
     Available enrichment types:
     {enrichment_docs}
     """
+    if session_id not in research_sessions:
+        return {"error": f"Session {session_id} not found"}
     session = research_sessions[session_id]
     # business_ids = (
     #     list(session.results.keys())
@@ -295,7 +307,7 @@ def session_enrich(
         for enrichment_type in enrichment_types:
             print(f"Enriching {enrichment_type} for {len(chunk)} businesses...")
             results = ENRICHMENT_TOOLS[enrichment_type](chunk)
-            if results["data"] is None:
+            if not hasattr(results, "data") or results["data"] is None:
                 for business_id in chunk:
                     session.results[business_id].enrichments[enrichment_type] = {
                         "info": f"No {enrichment_type} results found"
