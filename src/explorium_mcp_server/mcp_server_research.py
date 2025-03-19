@@ -57,14 +57,14 @@ class ResearchResultsPage(BaseModel):
 
 class ResearchSessionResult(BaseModel):
     business_id: str
-    data: models.businesses.Business
-    enrichments: Dict[EnrichmentType, Any]
+    data: Any | None = None
+    enrichments: Dict[EnrichmentType, Any] = {}
 
 
 class ResearchSession:
     def __init__(
         self,
-        filters: models.businesses.FetchBusinessesFilters,
+        filters: models.businesses.FetchBusinessesFilters | None = None,
         max_results: int | None = None,
     ):
         self.session_id = shortuuid.ShortUUID().random(length=8)
@@ -158,8 +158,12 @@ def load_sessions():
             for session_id, session_data in loaded_sessions.items():
                 # Create a new session with the basic attributes
                 session = ResearchSession(
-                    filters=models.businesses.FetchBusinessesFilters(
-                        **session_data["filters"]
+                    filters=(
+                        models.businesses.FetchBusinessesFilters(
+                            **session_data["filters"]
+                        )
+                        if session_data["filters"]
+                        else {}
                     ),
                     max_results=session_data["max_results"],
                 )
@@ -174,7 +178,7 @@ def load_sessions():
                 for bid, result_data in session_data["results"].items():
                     session.results[bid] = ResearchSessionResult(
                         business_id=result_data["business_id"],
-                        data=models.businesses.Business(**result_data["data"]),
+                        data=result_data["data"],
                         enrichments=result_data["enrichments"],
                     )
 
@@ -197,24 +201,6 @@ def cleanup_expired_sessions(ttl_hours: int = 24):
     return len(expired)
 
 
-class AutocompleteInput(BaseModel):
-    field: Literal[
-        "country",
-        "region_country_code",
-        "google_category",
-        "naics_category",
-        "linkedin_category",
-        "company_tech_stack_tech",
-        "job_title",
-        "company_size",
-        "company_revenue",
-        "company_age",
-        "job_department",
-        "job_level",
-    ]
-    query: str | int = Field(description="The query to autocomplete")
-
-
 research_mcp.add_tool(tools_businesses.autocomplete)
 
 SAMPLE_MAX_RESULTS = 2
@@ -231,13 +217,14 @@ def return_sample_data(session_id: str):
 
 
 @research_mcp.tool()
-def create_research_session(
+def create_search_session(
     filters: models.businesses.FetchBusinessesFilters,
     max_results: int = 10,
 ):
     """
     Start a new research session for businesses for the given filters.
     Do not use this tool if no filters are provided.
+    Do not create more than one research session at a time.
     You MUST call the autocomplete tool to get the list of possible values for
     filters specified in the autocomplete tool's description.
 
@@ -257,6 +244,34 @@ def create_research_session(
     session = ResearchSession(filters, max_results)
     research_sessions[session.session_id] = session
     session_load_more_results(session.session_id)
+    save_sessions()
+    return {
+        "session_id": session.session_id,
+        "session_details": get_session_details(session.session_id),
+        "sample_data": return_sample_data(session.session_id),
+    }
+
+
+@research_mcp.tool()
+def create_company_research_session(
+    company_inputs: List[models.businesses.MatchBusinessInput],
+):
+    """
+    Create a research session for SPECIFIC companies.
+    It is recommended to fetch firmographics after creating the session.
+    company_inputs (List[models.businesses.MatchBusinessInput]): A list of company inputs to research.
+    """
+    session = ResearchSession(filters=None, max_results=1)
+    results = tools_businesses.match_businesses(company_inputs)
+    if results["total_matches"] == 0:
+        return {"error": "No companies found"}
+    for result in results["matched_businesses"]:
+        session.results[result["business_id"]] = ResearchSessionResult(
+            business_id=result["business_id"],
+            data=result,
+            enrichments={},
+        )
+    research_sessions[session.session_id] = session
     save_sessions()
     return {
         "session_id": session.session_id,
