@@ -420,8 +420,7 @@ def session_enrich(
                             enrichment_type
                         ] = result["data"]
                         found_business_ids.append(result["business_id"])
-                        if len(success_samples) < SAMPLE_MAX_RESULTS:
-                            success_samples.append(result["data"])
+                        success_samples.append(result["data"])
                 # Partial enrichment results - add no results found for the missing businesses
                 for business_id in [
                     business_id
@@ -435,7 +434,7 @@ def session_enrich(
     # Return a sample of the data to see what was found
     if success_samples:
         save_sessions()
-        return {"sample_data": success_samples}
+        return {"info": "Successfully enriched businesses."}
     else:
         return {"info": "All enrichments returned no results."}
 
