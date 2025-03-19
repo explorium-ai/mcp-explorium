@@ -59,6 +59,7 @@ class ResearchSessionResult(BaseModel):
     business_id: str
     data: Any | None = None
     enrichments: Dict[EnrichmentType, Any] = {}
+    events: List[Any] = []
 
 
 class ResearchSession:
@@ -101,7 +102,10 @@ class ResearchSession:
             return
         for business in response["data"]:
             result = ResearchSessionResult(
-                business_id=business["business_id"], data=business, enrichments={}
+                business_id=business["business_id"],
+                data=business,
+                enrichments={},
+                events={},
             )
             self.results[business["business_id"]] = result
         self.current_page_index = next_page_index
@@ -138,6 +142,7 @@ def save_sessions():
                     "business_id": result.business_id,
                     "data": pydantic_model_to_serializable(result.data),
                     "enrichments": result.enrichments,
+                    "events": result.events,
                 }
                 for bid, result in session.results.items()
             },
@@ -174,12 +179,13 @@ def load_sessions():
                 session.total_results = session_data["total_results"]
                 session.last_modified = session_data.get("last_modified", time.time())
 
-                # Restore results
+                # Restore results including events
                 for bid, result_data in session_data["results"].items():
                     session.results[bid] = ResearchSessionResult(
                         business_id=result_data["business_id"],
                         data=result_data["data"],
-                        enrichments=result_data["enrichments"],
+                        enrichments=result_data.get("enrichments", {}),
+                        events=result_data.get("events", []),
                     )
 
                 # Only load non-expired sessions
@@ -270,6 +276,7 @@ def create_company_research_session(
             business_id=result["business_id"],
             data=result,
             enrichments={},
+            events=[],
         )
     research_sessions[session.session_id] = session
     save_sessions()
@@ -443,6 +450,62 @@ def session_enrich(
 session_enrich.__doc__ = session_enrich.__doc__.format(
     enrichment_docs=_format_enrichment_docs()
 )
+
+MAX_BUSINESSES_PER_FETCH_EVENTS_CALL = 20
+
+
+@research_mcp.tool()
+def session_fetch_events(
+    session_id: str,
+    event_types: List[models.businesses.BusinessEventType] = Field(
+        description="List of event types to fetch"
+    ),
+    timestamp_from: str = Field(description="ISO 8601 timestamp"),
+):
+    """
+    Fetch events for all businesses in the given research session.
+
+    Available event types are defined in models.businesses.BusinessEventType.
+    The events will be stored in the session results under the 'events' field.
+
+    IMPORTANT: Events are sorted descending by timestamp.
+    """
+    if session_id not in research_sessions:
+        return {"error": f"Session {session_id} not found"}
+
+    session = research_sessions[session_id]
+    session.touch()
+    business_ids = list(session.results.keys())
+
+    # Split the business IDs into chunks like in session_enrich
+    business_id_chunks = [
+        business_ids[i : i + MAX_BUSINESSES_PER_FETCH_EVENTS_CALL]
+        for i in range(0, len(business_ids), MAX_BUSINESSES_PER_FETCH_EVENTS_CALL)
+    ]
+
+    print(f"Fetching events for {len(business_id_chunks)} chunk(s)")
+    success_samples = []
+
+    # Process each chunk
+    for chunk_index, chunk in enumerate(business_id_chunks):
+        print(f"Processing chunk {chunk_index + 1} of {len(business_id_chunks)}")
+        results = tools_businesses.fetch_businesses_events(
+            business_ids=chunk,
+            event_types=pydantic_model_to_serializable(event_types),
+            timestamp_from=timestamp_from,
+        )
+
+        for output_event in results["output_events"]:
+            business_id = output_event["business_id"]
+            session.results[business_id].events.append(output_event)
+            success_samples.append(output_event)
+
+    if success_samples:
+        save_sessions()
+        return {"info": f"Successfully fetched {len(success_samples)} events."}
+    else:
+        return {"info": "No events found for any businesses."}
+
 
 load_sessions()
 cleanup_expired_sessions()
