@@ -90,6 +90,8 @@ class ResearchSession:
         response = tools_businesses.fetch_businesses(
             self.filters, page=next_page_index, size=self.max_results
         )
+        if not response["data"]:
+            return
         for business in response["data"]:
             result = ResearchSessionResult(
                 business_id=business["business_id"], data=business, enrichments={}
@@ -143,6 +145,11 @@ def create_research_session(
 
     Returns the session ID, which can be used to load more results.
     The data is not returned to save tokens. Use session_view_data to get the final results.
+
+    IMPORTANT: HOW TO USE THIS TOOL:
+    - Use the autocomplete tool to create a single research session.
+    - Use session_enrich to enrich the businesses in the session.
+    - Use session_view_data to get the final results. Only use this tool once you have finished enriching.
     """
     session = ResearchSession(filters, max_results)
     research_sessions[session.session_id] = session
@@ -275,12 +282,30 @@ def session_enrich(
         for enrichment_type in enrichment_types:
             print(f"Enriching {enrichment_type} for {len(chunk)} businesses...")
             results = ENRICHMENT_TOOLS[enrichment_type](chunk)
-            for result in results["data"]:
-                session.results[result["business_id"]].enrichments[
-                    enrichment_type
-                ] = result
+            if results["data"] is None:
+                for business_id in chunk:
+                    session.results[business_id].enrichments[enrichment_type] = {
+                        "info": f"No {enrichment_type} results found"
+                    }
+            else:
+                found_business_ids = []
+                for result in results["data"]:
+                    if result["data"]:
+                        session.results[result["business_id"]].enrichments[
+                            enrichment_type
+                        ] = result["data"]
+                        found_business_ids.append(result["business_id"])
+                # Partial enrichment results - add no results found for the missing businesses
+                for business_id in [
+                    business_id
+                    for business_id in chunk
+                    if business_id not in found_business_ids
+                ]:
+                    session.results[business_id].enrichments[enrichment_type] = {
+                        "info": f"No {enrichment_type} results found"
+                    }
 
-    print("Enrichment complete.")
+    print("Enrichment(s) complete.")
 
 
 # Update the session_enrich docstring with the formatted documentation
