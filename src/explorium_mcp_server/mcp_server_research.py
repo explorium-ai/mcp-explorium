@@ -1,16 +1,9 @@
 import asyncio
 import uuid
-import requests
-from mcp.server.fastmcp import FastMCP, Context
-from mcp.server import Server
-from mcp_agent.agents.agent import Agent
-from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
-from mcp_agent.mcp.mcp_aggregator import MCPAggregator
-from typing import List, Dict, Any, Optional, Literal
-from concurrent.futures import ThreadPoolExecutor
-from ._shared import BASE_URL, EXPLORIUM_API_KEY, pydantic_model_to_serializable
+from mcp.server.fastmcp import FastMCP
+from typing import List, Dict, Any, Literal
+from ._shared import pydantic_model_to_serializable
 from pydantic import Field, BaseModel
-from dataclasses import dataclass
 
 from . import tools_businesses
 from . import models
@@ -37,11 +30,22 @@ ENRICHMENT_DOCS: Dict[str, str] = {
     name: inspect.getdoc(func) for name, func in ENRICHMENT_TOOLS.items()
 }
 
-EnrichmentType = Literal[tuple(ENRICHMENT_TOOLS.keys())]
+EnrichmentType = Literal[
+    "firmographics",
+    "technographics",
+    "company_ratings",
+    "financial_metrics",
+    "funding_and_acquisitions",
+    "challenges",
+    "competitive_landscape",
+    "strategic_insights",
+    "workforce_trends",
+    "linkedin_posts",
+    "website_changes",
+    "website_keywords",
+]
 # Create a FastMCP server for the agent layer
-research_mcp = FastMCP(
-    "research_mcp", dependencies=["mcp_agent", "requests", "dotenv", "pydantic"]
-)
+research_mcp = FastMCP("research_mcp", dependencies=["requests", "dotenv", "pydantic"])
 
 
 class ResearchResultsPage(BaseModel):
@@ -128,6 +132,18 @@ class AutocompleteInput(BaseModel):
 
 research_mcp.add_tool(tools_businesses.autocomplete)
 
+SAMPLE_MAX_RESULTS = 2
+
+
+def return_sample_data(session_id: str):
+    session = research_sessions[session_id]
+    sample_data = []
+    for business_id in session.results:
+        sample_data.append(session.results[business_id].data)
+        if len(sample_data) >= SAMPLE_MAX_RESULTS:
+            break
+    return sample_data
+
 
 @research_mcp.tool()
 def create_research_session(
@@ -157,6 +173,7 @@ def create_research_session(
     return {
         "session_id": session.session_id,
         "session_details": get_session_details(session.session_id),
+        "sample_data": return_sample_data(session.session_id),
     }
 
 
@@ -276,6 +293,8 @@ def session_enrich(
         f"Enriching {len(business_id_chunks)} chunks of {MAX_BUSINESSES_PER_ENRICH_CALL} businesses each..."
     )
 
+    success_samples = []
+
     # Parallelize the enrichment calls of each chunk, printing the progress
     for chunk_index, chunk in enumerate(business_id_chunks):
         print(f"Enriching chunk {chunk_index + 1} of {len(business_id_chunks)}...")
@@ -295,6 +314,8 @@ def session_enrich(
                             enrichment_type
                         ] = result["data"]
                         found_business_ids.append(result["business_id"])
+                        if len(success_samples) < SAMPLE_MAX_RESULTS:
+                            success_samples.append(result["data"])
                 # Partial enrichment results - add no results found for the missing businesses
                 for business_id in [
                     business_id
@@ -305,7 +326,11 @@ def session_enrich(
                         "info": f"No {enrichment_type} results found"
                     }
 
-    print("Enrichment(s) complete.")
+    # Return a sample of the data to see what was found
+    if success_samples:
+        return {"sample_data": success_samples}
+    else:
+        return {"info": "All enrichments failed"}
 
 
 # Update the session_enrich docstring with the formatted documentation
