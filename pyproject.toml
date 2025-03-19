@@ -20,6 +20,7 @@ explorium-mcp-server = "explorium_mcp_server.__main__:main"
 
 [dependency-groups]
 agent = [
+    "langchain-anthropic>=0.3.10",
     "langchain-core>=0.3.45",
     "langchain-mcp-adapters>=0.0.4",
     "langchain-openai>=0.3.9",

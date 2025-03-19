@@ -12,6 +12,24 @@ wheels = [
 ]
 
 [[package]]
+name = "anthropic"
+version = "0.49.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "distro" },
+    { name = "httpx" },
+    { name = "jiter" },
+    { name = "pydantic" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/86/e3/a88c8494ce4d1a88252b9e053607e885f9b14d0a32273d47b727cbee4228/anthropic-0.49.0.tar.gz", hash = "sha256:c09e885b0f674b9119b4f296d8508907f6cff0009bc20d5cf6b35936c40b4398", size = 210016 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/76/74/5d90ad14d55fbe3f9c474fdcb6e34b4bed99e3be8efac98734a5ddce88c1/anthropic-0.49.0-py3-none-any.whl", hash = "sha256:bbc17ad4e7094988d2fa86b87753ded8dce12498f4b85fe5810f208f454a8375", size = 243368 },
+]
+
+[[package]]
 name = "anyio"
 version = "4.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -183,6 +201,7 @@ dependencies = [
 
 [package.dev-dependencies]
 agent = [
+    { name = "langchain-anthropic" },
     { name = "langchain-core" },
     { name = "langchain-mcp-adapters" },
     { name = "langchain-openai" },
@@ -208,6 +227,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 agent = [
+    { name = "langchain-anthropic", specifier = ">=0.3.10" },
     { name = "langchain-core", specifier = ">=0.3.45" },
     { name = "langchain-mcp-adapters", specifier = ">=0.0.4" },
     { name = "langchain-openai", specifier = ">=0.3.9" },
@@ -406,6 +426,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/70/09/d904a6e96f76ff214be59e7aa6ef7190008f52a0ab6689760a98de0bf37d/keyring-25.6.0.tar.gz", hash = "sha256:0b39998aa941431eb3d9b0d4b2460bc773b9df6fed7621c2dfb291a7e0187a66", size = 62750 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d3/32/da7f44bcb1105d3e88a0b74ebdca50c59121d2ddf71c9e34ba47df7f3a56/keyring-25.6.0-py3-none-any.whl", hash = "sha256:552a3f7af126ece7ed5c89753650eec89c7eaae8617d0aa4d9ad2b75111266bd", size = 39085 },
+]
+
+[[package]]
+name = "langchain-anthropic"
+version = "0.3.10"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anthropic" },
+    { name = "langchain-core" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/27/81/0e1e38694afd10d057dab8292823e1fd9dce2b03757b1cf581de7e3ea362/langchain_anthropic-0.3.10.tar.gz", hash = "sha256:b4364434393476bf076c8326a51261a55d4e4cfefda01b8adf53533e8ebd8ec5", size = 44023 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f4/aa/ca26a13aff12228cb3123cdaf23ee19ffa759102146fb81e3c3bccc599ef/langchain_anthropic-0.3.10-py3-none-any.whl", hash = "sha256:f4aa8ec03b1f5bcfbb73d2db516bddf009bc457e524f1ee8d651c1fe7338603f", size = 25527 },
 ]
 
 [[package]]
