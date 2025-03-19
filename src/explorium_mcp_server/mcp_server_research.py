@@ -235,12 +235,6 @@ def session_view_data(session_id: str):
 def _format_enrichment_docs() -> str:
     docs = []
     for name, doc in ENRICHMENT_DOCS.items():
-        # Extract the "Returns:" section from the docstring
-        # returns_section = ""
-        # if "Returns:" in doc:
-        #     returns_section = doc.split("Returns:")[1].split("Do NOT use")[0].strip()
-
-        # Format the documentation
         docs.append(f"\n--- {name} ---\n{doc}")
 
     return "\n".join(docs)
