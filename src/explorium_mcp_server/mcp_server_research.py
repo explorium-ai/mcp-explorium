@@ -9,6 +9,8 @@ from . import tools_businesses
 from . import models
 
 import inspect
+import time
+from datetime import datetime, timedelta
 
 # At the top of your tools_businesses.py file
 ENRICHMENT_TOOLS = {
@@ -72,6 +74,7 @@ class ResearchSession:
         self.current_page_index: int = 0
         self.total_pages: int | None = None
         self.total_results: int | None = None
+        self.last_modified = time.time()
 
     def get_total_loaded_results(self) -> int:
         """The total number of results that have been loaded."""
@@ -108,6 +111,14 @@ class ResearchSession:
             self.total_pages = response["total_pages"]
             self.total_results = response["total_results"]
 
+    def touch(self):
+        """Update the last modified timestamp"""
+        self.last_modified = time.time()
+
+    def is_expired(self, ttl_hours: int = 1) -> bool:
+        """Check if session has expired based on TTL"""
+        return (time.time() - self.last_modified) > (ttl_hours * 3600)
+
 
 import os
 import json
@@ -133,6 +144,7 @@ def save_sessions():
             "current_page_index": session.current_page_index,
             "total_pages": session.total_pages,
             "total_results": session.total_results,
+            "last_modified": session.last_modified,
         }
 
     with open("research_sessions.json", "w") as f:
@@ -156,6 +168,7 @@ def load_sessions():
                 session.current_page_index = session_data["current_page_index"]
                 session.total_pages = session_data["total_pages"]
                 session.total_results = session_data["total_results"]
+                session.last_modified = session_data.get("last_modified", time.time())
 
                 # Restore results
                 for bid, result_data in session_data["results"].items():
@@ -165,7 +178,23 @@ def load_sessions():
                         enrichments=result_data["enrichments"],
                     )
 
-                research_sessions[session_id] = session
+                # Only load non-expired sessions
+                if not session.is_expired():
+                    research_sessions[session_id] = session
+
+
+def cleanup_expired_sessions(ttl_hours: int = 24):
+    """Remove expired sessions"""
+    expired = [
+        sid
+        for sid, session in research_sessions.items()
+        if session.is_expired(ttl_hours)
+    ]
+    for sid in expired:
+        del research_sessions[sid]
+    if expired:
+        save_sessions()
+    return len(expired)
 
 
 class AutocompleteInput(BaseModel):
@@ -273,6 +302,7 @@ def session_load_more_results(session_id: str):
     session = research_sessions[session_id]
     num_loaded_before = session.get_total_loaded_results()
     session.load_more_results()
+    session.touch()
     num_loaded_after = session.get_total_loaded_results()
     session_details = get_session_details(session_id)
 
@@ -343,11 +373,7 @@ def session_enrich(
     if session_id not in research_sessions:
         return {"error": f"Session {session_id} not found"}
     session = research_sessions[session_id]
-    # business_ids = (
-    #     list(session.results.keys())
-    #     if business_ids_to_enrich is None
-    #     else business_ids_to_enrich
-    # )
+    session.touch()
     business_ids = list(session.results.keys())
 
     # Split the business IDs into chunks of MAX_BUSINESSES_PER_ENRICH_CALL
@@ -405,6 +431,7 @@ session_enrich.__doc__ = session_enrich.__doc__.format(
 )
 
 load_sessions()
+cleanup_expired_sessions()
 # Run the agent server
 if __name__ == "__main__":
     asyncio.run(research_mcp.run())
