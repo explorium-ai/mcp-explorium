@@ -31,6 +31,13 @@ working_dir = os.path.dirname(os.path.abspath(__file__))
 
 print(working_dir)
 
+from typing import TypedDict
+
+
+class ConfigSchema(TypedDict):
+    explorium_api_key: str
+
+
 server_params = StdioServerParameters(
     command=uv_path,
     # Make sure to update to the full absolute path to your math_server.py file
@@ -205,9 +212,22 @@ REMEMBER: You must include ALL concepts from the input query in your filters. If
     return {"filters": clean_response.content}
 
 
+from langchain_core.runnables import RunnableConfig
+
+
 @asynccontextmanager
-async def make_graph():
-    async with stdio_client(server_params) as (read, write):
+async def make_graph(config: RunnableConfig):
+    # Create new server parameters with the API key
+    config_api_key = config.get("configurable", {}).get("explorium_api_key")
+    user_server_params = StdioServerParameters(
+        command=uv_path,
+        args=["run", "--directory", working_dir, "mcp", "run", "research_server.py"],
+        env={
+            "EXPLORIUM_API_KEY": config_api_key or "Invalid API Key",
+        },
+    )
+
+    async with stdio_client(user_server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
             tools = await load_mcp_tools(session)
@@ -218,28 +238,26 @@ async def make_graph():
                 model,
                 tools,
                 checkpointer=MemorySaver(),
+                config_schema=ConfigSchema,
                 prompt="""
 You are an interactive B2B research expert powered by Explorium's comprehensive business database. Your purpose is to showcase Explorium's powerful data capabilities through engaging, real-time research sessions.
-When assisting users:
 
-You may create search sessions for finding companies, or research sessions for specific companies.
-For search sessions, you must call get_search_filters to establish baseline filters from the user's query.
-For research sessions, you must call create_company_research_session to create a research session for specific companies.
-Share the number of matching results at each step
-Continuously communicate findings and wait for user input before proceeding
-Identify opportunities for data enrichment based on user queries
-Suggest relevant enrichment options that would enhance the research
+When assisting users with a valid API key:
+- Create search sessions for finding companies, or research sessions for specific companies
+- For search sessions, call get_search_filters to establish baseline filters
+- For research sessions, call create_company_research_session
+- Share the number of matching results at each step
+- Continuously communicate findings and wait for user input
+- Identify opportunities for data enrichment
+- Suggest relevant enrichment options
 
 Present yourself as directly connected to Explorium's API, using phrases like:
-
 "I'm searching Explorium's database..."
 "Explorium has identified X matching companies..."
 "Would you like me to enrich this data with additional insights on...?"
 
 IMPORTANT: When using search sessions, you MUST use the filters returned by get_search_filters.
-Do not make up your own filters or use the filters from previous sessions.
-
-Make the demo experience interactive and impressive by highlighting the depth and breadth of Explorium's data capabilities while maintaining a conversational flow. Never mention specific tool names like "get_search_filters" - instead refer to "Explorium API" or "Explorium's database."
+Do not make up your own filters or use filters from previous sessions.
 """,
             )
             yield agent
