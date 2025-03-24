@@ -145,7 +145,18 @@ function AssistantMessage({ content }: { content: string }) {
           ),
           td: (props) => (
             <td className="border border-explorium-table-border px-6 py-3 align-text-top whitespace-normal">
-              {props.children}
+              {Array.isArray(props.children)
+                ? props.children.map((child) => {
+                    if (typeof child === "string") {
+                      return (
+                        <div className="mb-1">
+                          {child.replace("<br>", "\n")}
+                        </div>
+                      );
+                    }
+                    return child;
+                  })
+                : props.children}
             </td>
           ),
 
@@ -194,7 +205,7 @@ function getUsingToolMessage(toolName: MCPToolName, partialJson = ""): string {
   const messages: { [key: string]: string } = {
     get_search_filters: "Setting up Explorium search",
     create_search_session: "Searching for companies",
-    create_company_research_session: "Researching specific companies",
+    create_company_research_session: "Searching for specific companies",
     get_session_details: "Reading through the results",
     session_load_more_results: "Loading more results",
     session_view_data: "Looking at the data",
@@ -226,7 +237,7 @@ function UsingToolMessage({
 function getUsedToolMessage(toolName: MCPToolName, content: any): string {
   switch (toolName) {
     case "create_company_research_session":
-      return "Researched companies";
+      return "Matched companies";
     case "session_enrich": {
       const parsedContent = JSON.parse(content);
       const enrichments = (parsedContent.results as any[])?.length;
@@ -244,6 +255,10 @@ function getUsedToolMessage(toolName: MCPToolName, content: any): string {
     }
     case "session_fetch_events": {
       return "Found events";
+    }
+    case "session_view_data": {
+      const parsedContent = JSON.parse(content);
+      return `Loaded ${Object.keys(parsedContent).length} results`;
     }
     case "autocomplete": {
       return "Created search filters";
