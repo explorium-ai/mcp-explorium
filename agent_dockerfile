@@ -1,0 +1,14 @@
+FROM langchain/langgraph-api:3.11
+
+
+
+# -- Adding local package . --
+ADD . /deps/mcp-explorium
+# -- End of local package . --
+
+# -- Installing all local dependencies --
+RUN PYTHONDONTWRITEBYTECODE=1 pip install --no-cache-dir -c /api/constraints.txt -e /deps/*
+# -- End of local dependencies install --
+ENV LANGSERVE_GRAPHS='{"research_agent": "/deps/mcp-explorium/research_agent.py:make_graph"}'
+
+WORKDIR /deps/mcp-explorium
