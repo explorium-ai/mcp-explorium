@@ -275,8 +275,6 @@ def create_company_research_session(
     if "message" in results:
         return {"error": results["message"]}
     session.total_results = results["total_matches"]
-    if results["total_matches"] == 0:
-        return {"error": "No companies found"}
     for result in results["matched_businesses"]:
         session.results[result["business_id"]] = ResearchSessionResult(
             business_id=result["business_id"],
@@ -524,13 +522,14 @@ def session_fetch_events(
         save_sessions()
         if return_results:
             return {
-                "info": f"Successfully fetched {len(success_samples)} events.",
+                "info": f"Success",
+                "total_events": len(success_samples),
                 "results": success_samples,
             }
         else:
-            return {"info": f"Successfully fetched {len(success_samples)} events."}
+            return {"info": f"Success", "total_events": len(success_samples)}
     else:
-        return {"info": "No events found for any businesses."}
+        return {"info": "Miss", "total_events": 0}
 
 
 load_sessions()

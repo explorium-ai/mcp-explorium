@@ -1,7 +1,7 @@
 import { Message } from "@langchain/langgraph-sdk";
 import React from "react";
 import { MCPToolName } from "./ai/toolTypes";
-import { Check, LoaderCircle, X } from "lucide-react";
+import { AlertTriangle, Check, Frown, LoaderCircle, X } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -205,7 +205,7 @@ function getUsingToolMessage(toolName: MCPToolName, partialJson = ""): string {
   const messages: { [key: string]: string } = {
     get_search_filters: "Setting up Explorium search",
     create_search_session: "Searching for companies",
-    create_company_research_session: "Matching companies in Explorium database",
+    create_company_research_session: "Matching",
     get_session_details: "Reading through the results",
     session_load_more_results: "Loading more results",
     session_view_data: "Looking at the data",
@@ -234,46 +234,62 @@ function UsingToolMessage({
   );
 }
 
-function getUsedToolMessage(toolName: MCPToolName, content: any): string {
+function getUsedToolMessage(
+  toolName: MCPToolName,
+  content: any
+): { text: string; type: "warning" | "success" } {
   switch (toolName) {
     case "create_company_research_session": {
       const parsedContent = JSON.parse(content);
       const totalResults = parsedContent.session_details.total_results;
       if (totalResults === 0) {
-        return "No companies found";
+        return { text: "No companies found", type: "warning" };
       }
       if (totalResults === 1) {
-        return "Matched company";
+        return { text: "Matched company", type: "success" };
       }
-      return `Matched ${totalResults} companies`;
+      return { text: `Matched ${totalResults} companies`, type: "success" };
     }
     case "session_enrich": {
       const parsedContent = JSON.parse(content);
       const enrichments = (parsedContent.results as any[])?.length;
       if (!enrichments) {
-        return "Found 0 results";
+        return { text: "No enrichments found", type: "warning" };
       }
       if (enrichments === 1) {
-        return "Found 1 result";
+        return { text: "Found 1 result", type: "success" };
       }
-      return `Found ${enrichments} results`;
+      return { text: `Found ${enrichments} results`, type: "success" };
     }
     case "create_search_session": {
       const parsedContent = JSON.parse(content);
-      return `Found ${parsedContent.session_details.total_results} results`;
+      return {
+        text: `Found ${parsedContent.session_details.total_results} results`,
+        type: "success",
+      };
     }
     case "session_fetch_events": {
-      return "Found events";
+      const parsedContent = JSON.parse(content);
+      if (parsedContent.total_events === 0) {
+        return { text: "No events found", type: "warning" };
+      }
+      return {
+        text: `Found ${parsedContent.total_events} events`,
+        type: "success",
+      };
     }
     case "session_view_data": {
       const parsedContent = JSON.parse(content);
-      return `Loaded ${Object.keys(parsedContent).length} results`;
+      return {
+        text: `Loaded ${Object.keys(parsedContent).length} results`,
+        type: "success",
+      };
     }
     case "autocomplete": {
-      return "Created search filters";
+      return { text: "Created search filters", type: "success" };
     }
   }
-  return "Done";
+  return { text: "Done", type: "success" };
 }
 
 function gotError(content: string): boolean {
@@ -296,9 +312,14 @@ function UsedToolMessage({
   content: string;
   success: boolean;
 }) {
+  const isError = !success || gotError(content);
+  const { text, type } = isError
+    ? { text: "Something went wrong", type: "warning" }
+    : getUsedToolMessage(toolName, content);
+
   return (
     <div className="flex items-center gap-2 my-4 h-8">
-      {!success || gotError(content) ? (
+      {isError ? (
         <>
           <X className="w-4 h-4 text-red-500" />
           <div className="text-sm text-gray-600 italic">
@@ -307,12 +328,13 @@ function UsedToolMessage({
         </>
       ) : (
         <>
-          <div className="flex items-center justify-center bg-explorium-green rounded-full w-3 h-3 aspect-square mx-0.5">
-            <Check className="w-4 h-4 translate-x-0.5 -translate-y-[1px]" />
-          </div>
-          <div className="text-sm text-gray-600 italic">
-            {getUsedToolMessage(toolName, content)}
-          </div>
+          {type === "success" && (
+            <div className="flex items-center justify-center bg-explorium-green rounded-full w-3 h-3 aspect-square mx-0.5">
+              <Check className="w-4 h-4 translate-x-0.5 -translate-y-[1px]" />
+            </div>
+          )}
+          {type === "warning" && <Frown className="w-4 h-4 text-gray-600" />}
+          <div className="text-sm text-gray-600 italic">{text}</div>
         </>
       )}
     </div>
