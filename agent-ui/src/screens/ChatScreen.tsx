@@ -8,7 +8,7 @@ import { useCallback } from "react";
 
 export default function ChatScreen() {
   const thread = useStream<{ messages: Message[] }>({
-    apiUrl: "http://localhost:2024",
+    apiUrl: import.meta.env.VITE_AGENT_API_URL,
     assistantId: "research_agent",
     messagesKey: "messages",
   });
