@@ -97,7 +97,6 @@ def autocomplete(
         "google_category",
         "naics_category",
         "linkedin_category",
-        "company_tech_stack_tech",
         "job_title",
         "company_size",
         "company_revenue",

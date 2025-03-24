@@ -279,6 +279,8 @@ If multiple industry categories are mentioned, ensure all are represented.
 Examples: software development + healthcare, software + finance, etc.
 
 After using tools, share the results with the user.
+If you've generated a table in your response, keep the rest of your response concise and short. Do not
+write long and winded lists after a table.
 
 """,
             )
