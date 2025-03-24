@@ -92,13 +92,25 @@ The `research_agent.py` file contains a LangGraph agent that can be used to inte
 Because of its multi-agent nature, you must configure an ANTHROPIC_API_KEY environment variable,
 which you can put inside of `.env`.
 
-To start using the agent:
+Start the LangGraph API server:
 
 ```bash
 uv sync --group agent
 
+source ./venv/bin/activate
+
 langgraph dev
 ```
+
+Start the Agent UI:
+
+```bash
+cd agent-ui
+pnpm install
+pnpm dev
+```
+
+(if `pnpm` is not installed, install it with `npm install -g pnpm`)
 
 ## Building and Deploying
 
