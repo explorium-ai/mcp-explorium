@@ -1,6 +1,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { ArrowUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 interface ChatInputProps {
   onSubmit: (message: string) => void;
@@ -8,6 +9,13 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ onSubmit, disabled }: ChatInputProps) {
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (!disabled && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [disabled]);
+
   return (
     <form
       className="relative"
@@ -20,7 +28,8 @@ export default function ChatInput({ onSubmit, disabled }: ChatInputProps) {
       }}
     >
       <Textarea
-        className="resize-none h-24 pt-2 px-3 bg-white"
+        ref={inputRef}
+        className="resize-none h-24 pt-2 px-3 bg-white border-explorium-green"
         disabled={disabled}
         name="message"
         onKeyDown={(e) => {
@@ -36,10 +45,11 @@ export default function ChatInput({ onSubmit, disabled }: ChatInputProps) {
       <Button
         onClick={() => {}}
         disabled={disabled}
-        className="rounded-lg absolute right-2 bottom-2 w-10 h-10"
+        variant="cta"
+        className="absolute right-2 bottom-2 w-10 h-10 rounded-full"
         type="submit"
       >
-        <ArrowUp />
+        <ArrowRight className="text-black" />
       </Button>
     </form>
   );

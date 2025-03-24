@@ -113,8 +113,8 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
 
 function HumanMessage({ content }: { content: string }) {
   return (
-    <div className="max-w-2/3 w-fit py-2 px-3 bg-explorium-green rounded ml-auto my-4">
-      <div className="break-words">{content}</div>
+    <div className="max-w-2/3 w-fit py-2 px-3 bg-[#286167] rounded ml-auto my-4">
+      <div className="break-words text-white">{content}</div>
     </div>
   );
 }

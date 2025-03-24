@@ -6,7 +6,7 @@ export default function App() {
   const apiKey = useExploriumStore((state) => state.apiKey);
 
   return (
-    <div className="h-screen bg-slate-100/30">
+    <div className="h-screen bg-explorium-bg">
       {apiKey ? <ChatScreen /> : <ApiKeyInputScreen />}
     </div>
   );

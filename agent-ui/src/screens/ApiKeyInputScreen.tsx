@@ -2,7 +2,7 @@ import ApiKeyInput from "@/components/ApiKeyInput";
 
 export default function ApiKeyInputScreen() {
   return (
-    <div>
+    <div className="h-screen flex items-center justify-center">
       <ApiKeyInput />
     </div>
   );
