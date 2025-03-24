@@ -282,6 +282,8 @@ After using tools, share the results with the user.
 If you've generated a table in your response, keep the rest of your response concise and short. Do not
 write long and winded lists after a table.
 
+If you encountered errors or found no data, don't generate a response. Just say an error occured.
+
 """,
             )
             yield agent
