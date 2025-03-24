@@ -99,7 +99,7 @@ class ResearchSession:
             self.filters, page=next_page_index, size=self.max_results
         )
         if "data" not in response or not response["data"]:
-            raise Exception(f"Error! {str(response)}")
+            return
         for business in response["data"]:
             result = ResearchSessionResult(
                 business_id=business["business_id"],

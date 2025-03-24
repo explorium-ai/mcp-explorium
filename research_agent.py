@@ -275,6 +275,9 @@ Example:
 | Company B    | Los Angeles | $50M    |
 
 When comparing companies, opt to use tables.
+When using autocomplete, you MUST include ALL concepts from the input query in your filters.
+If multiple industry categories are mentioned, ensure all are represented.
+Examples: software development + healthcare, software + finance, etc.
 
 """,
             )
