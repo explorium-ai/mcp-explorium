@@ -89,7 +89,7 @@ or if the virtual environment is not activated.
 
 The `research_agent.py` file contains a LangGraph agent that can be used to interact with the Explorium API.
 
-Because of its multi-agent nature, you must configure an ANTHROPIC_API_KEY environment variable,
+You must configure an ANTHROPIC_API_KEY environment variable,
 which you can put inside of `.env`.
 
 Start the LangGraph API server:
