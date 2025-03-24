@@ -205,7 +205,7 @@ function getUsingToolMessage(toolName: MCPToolName, partialJson = ""): string {
   const messages: { [key: string]: string } = {
     get_search_filters: "Setting up Explorium search",
     create_search_session: "Searching for companies",
-    create_company_research_session: "Searching for specific companies",
+    create_company_research_session: "Matching companies in Explorium database",
     get_session_details: "Reading through the results",
     session_load_more_results: "Loading more results",
     session_view_data: "Looking at the data",
@@ -236,8 +236,17 @@ function UsingToolMessage({
 
 function getUsedToolMessage(toolName: MCPToolName, content: any): string {
   switch (toolName) {
-    case "create_company_research_session":
-      return "Matched companies";
+    case "create_company_research_session": {
+      const parsedContent = JSON.parse(content);
+      const totalResults = parsedContent.session_details.total_results;
+      if (totalResults === 0) {
+        return "No companies found";
+      }
+      if (totalResults === 1) {
+        return "Matched company";
+      }
+      return `Matched ${totalResults} companies`;
+    }
     case "session_enrich": {
       const parsedContent = JSON.parse(content);
       const enrichments = (parsedContent.results as any[])?.length;

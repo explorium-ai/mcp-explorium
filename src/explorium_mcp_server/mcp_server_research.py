@@ -274,6 +274,7 @@ def create_company_research_session(
     results = tools_businesses.match_businesses(company_inputs)
     if "message" in results:
         return {"error": results["message"]}
+    session.total_results = results["total_matches"]
     if results["total_matches"] == 0:
         return {"error": "No companies found"}
     for result in results["matched_businesses"]:
