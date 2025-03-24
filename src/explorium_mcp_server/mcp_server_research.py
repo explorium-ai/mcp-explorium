@@ -249,13 +249,16 @@ def create_search_session(
     """
     session = ResearchSession(filters, max_results)
     research_sessions[session.session_id] = session
-    session_load_more_results(session.session_id)
-    save_sessions()
-    return {
-        "session_id": session.session_id,
-        "session_details": get_session_details(session.session_id),
-        "sample_data": return_sample_data(session.session_id),
-    }
+    try:
+        session_load_more_results(session.session_id)
+        save_sessions()
+        return {
+            "session_id": session.session_id,
+            "session_details": get_session_details(session.session_id),
+            "sample_data": return_sample_data(session.session_id),
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @research_mcp.tool()

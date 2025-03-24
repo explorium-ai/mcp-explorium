@@ -36,6 +36,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --explorium-green: oklch(0.89 0.158 115.6);
+  --explorium-green-foreground: oklch(0.145 0 0);
 }
 
 .dark {
@@ -70,6 +72,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --explorium-green: oklch(0.89 0.158 115.6);
+  --explorium-green-foreground: oklch(0.985 0 0);
 }
 
 @theme inline {
@@ -108,6 +112,8 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-explorium-green: var(--explorium-green);
+  --color-explorium-green-foreground: var(--explorium-green-foreground);
 }
 
 @layer base {
@@ -116,5 +122,25 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Webkit scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgb(0 0 0 / 0.3);
+    border-radius: 20px;
+  }
+
+  /* For dark mode */
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: rgb(255 255 255 / 0.3);
   }
 }

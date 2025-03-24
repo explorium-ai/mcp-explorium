@@ -138,7 +138,6 @@ def get_search_filters(businesses_description: str):
             "messages": [
                 HumanMessage(
                     content=f"""
-Business Search Filter Generation Instructions
 You are tasked with generating business search filters based on user descriptions. Follow these steps precisely:
 
 1. Examine the business description carefully to identify ALL key concepts (industries, locations, specializations).
@@ -173,13 +172,17 @@ Copyfield: [values]
 Double-check your final filters to ensure you haven't missed any concepts from the input query.
 Include ONLY filter fields and values returned by autocomplete or from the valid enum values. No explanations or additional text.
 
+Call as many tools as possible at once, instead of calling one tool at a time.
+Reply with as little text as possible, as the user will not see your responses.
+
 Query: {businesses_description}
 REMEMBER: You must include ALL concepts from the input query in your filters. If multiple industry categories are mentioned, ensure all are represented.
 """
                 )
             ]
         },
-        config={"configurable": {"thread_id": "1"}},
+        stream_mode="updates",
+        config={"configurable": {"thread_id": "filters-1"}},
     )
 
     response = result["messages"][-1].content
@@ -232,8 +235,9 @@ async def make_graph(config: RunnableConfig):
             await session.initialize()
             tools = await load_mcp_tools(session)
             # Remove start_research_session from tools
-            tools = [tool for tool in tools if tool.name not in ["autocomplete"]]
-            tools.append(get_search_filters)
+            # REMOVED TEMPORARILY
+            # tools = [tool for tool in tools if tool.name not in ["autocomplete"]]
+            # tools.append(get_search_filters)
             agent = create_react_agent(
                 model,
                 tools,
@@ -258,6 +262,7 @@ Present yourself as directly connected to Explorium's API, using phrases like:
 
 IMPORTANT: When using search sessions, you MUST use the filters returned by get_search_filters.
 Do not make up your own filters or use filters from previous sessions.
+Do not mention tools by name.
 """,
             )
             yield agent

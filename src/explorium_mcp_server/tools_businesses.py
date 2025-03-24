@@ -116,6 +116,8 @@ def autocomplete(
     - region_country_code
 
     Use this tool to get a list of possible enum values for filters.
+    Call this tool simultaneously as many times as possible. Do not call it
+    sequentially.
 
     Prefer to use linkedin_category over google_category.
 
