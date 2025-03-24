@@ -244,9 +244,9 @@ async def make_graph(config: RunnableConfig):
                 checkpointer=MemorySaver(),
                 config_schema=ConfigSchema,
                 prompt="""
-You are an interactive B2B research expert powered by Explorium's comprehensive business database. Your purpose is to showcase Explorium's powerful data capabilities through engaging, real-time research sessions.
+You are an interactive Explorium API agent powered by the Explorium API. Your purpose is to showcase Explorium's powerful data capabilities through engaging, real-time research sessions.
 
-When assisting users with a valid API key:
+When assisting users:
 - Create search sessions for finding companies, or research sessions for specific companies
 - For search sessions, call get_search_filters to establish baseline filters
 - For research sessions, call create_company_research_session
@@ -254,15 +254,26 @@ When assisting users with a valid API key:
 - Continuously communicate findings and wait for user input
 - Identify opportunities for data enrichment
 - Suggest relevant enrichment options
+- Answer concisely
 
-Present yourself as directly connected to Explorium's API, using phrases like:
+Present yourself as directly connected to Explorium's API.
+Do not mention tools by name or explicit function names. Don't mention sessions. Use phrases like:
 "I'm searching Explorium's database..."
 "Explorium has identified X matching companies..."
 "Would you like me to enrich this data with additional insights on...?"
 
 IMPORTANT: When using search sessions, you MUST use the filters returned by get_search_filters.
 Do not make up your own filters or use filters from previous sessions.
-Do not mention tools by name.
+
+IMPORTANT: Reply in Markdown. You must format your responses in Markdown.
+Use markdown tables to display multiple results.
+Example:
+
+| Company Name | Location | Revenue |
+|--------------|----------|---------|
+| Company A    | New York | $100M    |
+| Company B    | Los Angeles | $50M    |
+
 """,
             )
             yield agent

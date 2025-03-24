@@ -2,6 +2,8 @@ import { Message } from "@langchain/langgraph-sdk";
 import React from "react";
 import { MCPToolName } from "./ai/toolTypes";
 import { Check, LoaderCircle, X } from "lucide-react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatMessagesProps {
   messages: Message[];
@@ -122,10 +124,51 @@ function HumanMessage({ content }: { content: string }) {
 function AssistantMessage({ content }: { content: string }) {
   return (
     <div className="pr-8">
-      <div className="break-words whitespace-pre-wrap">{content}</div>
+      <Markdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          // Custom table rendering
+          table: (props) => (
+            <table className="border-collapse table-auto w-full my-4 bg-white text-sm shadow">
+              {props.children}
+            </table>
+          ),
+          thead: (props) => (
+            <thead className="border-explorium-table-border">
+              {props.children}
+            </thead>
+          ),
+          th: (props) => (
+            <th className="border border-explorium-table-border px-6 py-3 text-left font-normal text-[#7F8583] min-w-[150px]">
+              {props.children}
+            </th>
+          ),
+          td: (props) => (
+            <td className="border border-explorium-table-border px-6 py-3 align-text-top whitespace-normal">
+              {props.children}
+            </td>
+          ),
+
+          // Custom list rendering
+          ul: (props) => (
+            <ul className="list-disc pl-6 my-4">{props.children}</ul>
+          ),
+          ol: (props) => (
+            <ol className="list-decimal pl-6 my-4">{props.children}</ol>
+          ),
+          li: (props) => (
+            <li className="my-1 marker:text-black/60 marker:text-sm">
+              {props.children}
+            </li>
+          ),
+        }}
+      >
+        {content}
+      </Markdown>
     </div>
   );
 }
+
 function getUsingToolMessage(toolName: MCPToolName, partialJson = ""): string {
   if (toolName === "autocomplete") {
     try {

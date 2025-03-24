@@ -22,7 +22,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: #98ab5a;
+  --ring: oklch(0.89 0.158 115.6);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -39,6 +39,7 @@
   --explorium-green: oklch(0.89 0.158 115.6);
   --explorium-green-foreground: oklch(0.145 0 0);
   --explorium-bg: #fffcf5;
+  --explorium-table-border: #cacfce;
 }
 
 .dark {
@@ -116,6 +117,7 @@
   --color-explorium-green: var(--explorium-green);
   --color-explorium-green-foreground: var(--explorium-green-foreground);
   --color-explorium-bg: var(--explorium-bg);
+  --color-explorium-table-border: var(--explorium-table-border);
 }
 
 @layer base {
