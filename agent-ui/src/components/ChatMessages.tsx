@@ -17,6 +17,7 @@ interface AiUsingToolMessage {
   type: "tool_use";
   index: number;
   name: MCPToolName;
+  partial_json: string;
 }
 
 type AiMessage = AiTextMessage | AiUsingToolMessage;
@@ -36,7 +37,6 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
     <div className="flex-1 overflow-y-auto py-2 gap-2 flex flex-col">
       <div className="w-[748px] mx-auto">
         {messages.map((message, index) => {
-          const isLastMessage = index === messages.length - 1;
           if (message.type === "human") {
             return (
               <HumanMessage
@@ -49,7 +49,7 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
           if (message.type === "ai" && Array.isArray(message.content)) {
             return (
               <div key={message.id}>
-                {message.content.map((content) => {
+                {message.content.map((content, contentIndex) => {
                   const aiMessage = content as AiMessage;
                   // Assistant text messages
                   if (aiMessage.type === "text") {
@@ -61,9 +61,18 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
                     );
                   }
 
-                  // "Using tool" messages
+                  // We only show the "Using tool" message if it's the last message
+                  const isLastMessage =
+                    index === messages.length - 1 &&
+                    contentIndex === message.content.length - 1;
                   if (aiMessage.type === "tool_use" && isLastMessage) {
-                    return <UsingToolMessage toolName={aiMessage.name} />;
+                    return (
+                      <UsingToolMessage
+                        key={aiMessage.index}
+                        toolName={aiMessage.name}
+                        partialJson={aiMessage.partial_json}
+                      />
+                    );
                   }
                 })}
               </div>
@@ -71,6 +80,21 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
           }
 
           if (message.type === "tool" && !!message.name) {
+            // We shouldn't show the tool message if:
+            // - Its name is "autocomplete"
+            // - There is another "autocomplete" tool message after it
+            if (
+              message.name === "autocomplete" &&
+              index < messages.length - 1
+            ) {
+              const nextMessage = messages[index + 1];
+              if (
+                nextMessage?.type === "tool" &&
+                nextMessage.name === "autocomplete"
+              ) {
+                return null;
+              }
+            }
             return (
               <UsedToolMessage
                 key={message.id}
@@ -102,25 +126,55 @@ function AssistantMessage({ content }: { content: string }) {
     </div>
   );
 }
+function getUsingToolMessage(toolName: MCPToolName, partialJson = ""): string {
+  if (toolName === "autocomplete") {
+    try {
+      const parsedJson = JSON.parse(partialJson);
+      return `Thinking about ${parsedJson.field}`;
+    } catch {
+      // Try to extract field from partial JSON
+      if (partialJson.includes('"field"')) {
+        try {
+          // Extract field value using regex
+          const fieldMatch = partialJson.match(/"field"\s*:\s*"([^"]+)"/);
+          if (fieldMatch && fieldMatch[1]) {
+            return `Thinking about ${fieldMatch[1]}`;
+          }
+        } catch {
+          return "Thinking";
+        }
+      }
+      return "Thinking";
+    }
+  }
 
-const usingToolMessages: { [key: string]: string } = {
-  get_search_filters: "Setting up Explorium search",
-  create_search_session: "Searching for companies",
-  create_company_research_session: "Researching specific companies",
-  get_session_details: "Reading through the results",
-  session_load_more_results: "Loading more results",
-  session_view_data: "Looking at the data",
-  get_business_id: "Getting business ID",
-  session_enrich: "Getting more information",
-  session_fetch_events: "Searching for events",
-};
+  const messages: { [key: string]: string } = {
+    get_search_filters: "Setting up Explorium search",
+    create_search_session: "Searching for companies",
+    create_company_research_session: "Researching specific companies",
+    get_session_details: "Reading through the results",
+    session_load_more_results: "Loading more results",
+    session_view_data: "Looking at the data",
+    get_business_id: "Getting business ID",
+    session_enrich: "Getting more information",
+    session_fetch_events: "Searching for events",
+  };
 
-function UsingToolMessage({ toolName }: { toolName: MCPToolName }) {
+  return messages[toolName] || "Working on it";
+}
+
+function UsingToolMessage({
+  toolName,
+  partialJson,
+}: {
+  toolName: MCPToolName;
+  partialJson: string;
+}) {
   return (
     <div className="flex items-center gap-2 my-4 h-8">
       <LoaderCircle className="animate-spin w-4 text-gray-600" />
       <div className="text-sm text-gray-600 italic">
-        {usingToolMessages[toolName]}
+        {getUsingToolMessage(toolName, partialJson)}
       </div>
     </div>
   );
@@ -136,7 +190,7 @@ function getUsedToolMessage(toolName: MCPToolName, content: any): string {
       if (enrichments === 1) {
         return "Got more information";
       }
-      return `Got ${enrichments} enrichments`;
+      return `Found ${enrichments} results`;
     }
     case "create_search_session": {
       const parsedContent = JSON.parse(content);
@@ -145,8 +199,10 @@ function getUsedToolMessage(toolName: MCPToolName, content: any): string {
     case "session_fetch_events": {
       return "Found events";
     }
+    case "autocomplete": {
+      return "Created search filters";
+    }
   }
-  console.log("content", { content });
   return "Done";
 }
 
