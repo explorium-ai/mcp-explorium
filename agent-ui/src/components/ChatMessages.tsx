@@ -186,9 +186,12 @@ function getUsedToolMessage(toolName: MCPToolName, content: any): string {
       return "Researched companies";
     case "session_enrich": {
       const parsedContent = JSON.parse(content);
-      const enrichments = (parsedContent.results as any[]).length;
+      const enrichments = (parsedContent.results as any[])?.length;
+      if (!enrichments) {
+        return "Found 0 results";
+      }
       if (enrichments === 1) {
-        return "Got more information";
+        return "Found 1 result";
       }
       return `Found ${enrichments} results`;
     }

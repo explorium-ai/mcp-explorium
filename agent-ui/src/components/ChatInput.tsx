@@ -32,6 +32,7 @@ export default function ChatInput({ onSubmit, disabled }: ChatInputProps) {
         className="resize-none h-24 pt-2 px-3 bg-white border-explorium-green"
         disabled={disabled}
         name="message"
+        required
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();

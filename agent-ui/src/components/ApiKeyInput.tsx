@@ -1,19 +1,27 @@
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import { Button } from "@/components/ui/button";
 import useExploriumStore from "@/store";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Lock } from "lucide-react";
 
 export default function ApiKeyInput() {
   const setApiKey = useExploriumStore((state) => state.setApiKey);
 
   return (
-    <div className="m-auto">
-      <h1 className="text-2xl font-bold">Explorium Research Agent Demo</h1>
-      <p className="text-sm text-muted-foreground">
-        Start by entering your API key below.
-      </p>
+    <div className="m-auto flex gap-4 items-start">
+      <div className="w-35">
+        <h1 className="text-xl font-bold">API Agent</h1>
+        <p className="text-sm text-muted-foreground">
+          Enter your Explorium API key to start.
+        </p>
+      </div>
       <form
-        className="mt-4"
         onSubmit={(e) => {
           e.preventDefault();
           const form = e.target as HTMLFormElement;
@@ -21,11 +29,25 @@ export default function ApiKeyInput() {
           setApiKey(apiKey);
         }}
       >
-        <Input
-          name="apiKey"
-          placeholder="Enter your API key"
-          className="font-mono bg-white"
-        />
+        <div className="flex gap-2 items-center">
+          <Input
+            name="apiKey"
+            placeholder="Enter your API key"
+            className="font-mono bg-white w-84"
+            type="password"
+            required
+          />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Lock className="w-4 h-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent align="end">
+                <p>We do not store your API key.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <div className="flex mt-2 gap-2">
           <Button type="submit" variant="cta">
             Start
