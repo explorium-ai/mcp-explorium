@@ -16,16 +16,20 @@ export default function ChatScreen() {
 
   const onSendMessage = useCallback(
     (message: string) => {
-      thread.submit(
-        { messages: [{ type: "human", content: message }] },
-        {
-          config: {
-            configurable: {
-              explorium_api_key: apiKey,
+      try {
+        thread.submit(
+          { messages: [{ type: "human", content: message }] },
+          {
+            config: {
+              configurable: {
+                explorium_api_key: apiKey,
+              },
             },
-          },
-        }
-      );
+          }
+        );
+      } catch (error) {
+        console.error("Error submitting message", error);
+      }
     },
     [thread, apiKey]
   );

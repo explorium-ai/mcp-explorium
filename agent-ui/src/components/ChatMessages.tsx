@@ -1,7 +1,7 @@
 import { Message } from "@langchain/langgraph-sdk";
 import React from "react";
 import { MCPToolName } from "./ai/toolTypes";
-import { AlertTriangle, Check, Frown, LoaderCircle, X } from "lucide-react";
+import { Check, Frown, LoaderCircle, X } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -189,7 +189,7 @@ function getUsingToolMessage(toolName: MCPToolName, partialJson = ""): string {
       // Try to extract field from partial JSON
       if (partialJson.includes('"field"')) {
         try {
-          // Extract field value using regex
+          // Extract fmiield value using regex
           const fieldMatch = partialJson.match(/"field"\s*:\s*"([^"]+)"/);
           if (fieldMatch && fieldMatch[1]) {
             return `Thinking about ${fieldMatch[1]}`;
@@ -264,7 +264,9 @@ function getUsedToolMessage(
     case "create_search_session": {
       const parsedContent = JSON.parse(content);
       return {
-        text: `Found ${parsedContent.session_details.total_results} results`,
+        text: `Found ${
+          parsedContent.session_details.total_results || 0
+        } results`,
         type: "success",
       };
     }
