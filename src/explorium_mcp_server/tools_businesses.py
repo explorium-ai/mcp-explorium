@@ -6,7 +6,6 @@ from ._shared import (
     pydantic_model_to_serializable,
     get_filters_payload,
     BASE_URL,
-    EXPLORIUM_API_KEY,
 )
 from . import models
 from pydantic import conlist, Field
@@ -87,6 +86,7 @@ def fetch_businesses(
 
 
 import requests
+import os
 
 
 @mcp.tool()
@@ -127,7 +127,7 @@ def autocomplete(
     """
     headers = {
         "accept": "application/json",
-        "api_key": EXPLORIUM_API_KEY,
+        "api_key": os.environ.get("EXPLORIUM_API_KEY"),
     }
 
     response = requests.get(

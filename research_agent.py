@@ -274,6 +274,8 @@ Example:
 | Company A    | New York | $100M    |
 | Company B    | Los Angeles | $50M    |
 
+When comparing companies, opt to use tables.
+
 """,
             )
             yield agent

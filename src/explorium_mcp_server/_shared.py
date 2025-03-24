@@ -5,12 +5,7 @@ import os
 from pydantic import BaseModel
 from enum import Enum
 
-# Get API key from environment variables
-EXPLORIUM_API_KEY = os.environ.get("EXPLORIUM_API_KEY")
 BASE_URL = "https://api.explorium.ai/v1"
-
-if not EXPLORIUM_API_KEY:
-    raise ValueError("EXPLORIUM_API_KEY is not set")
 
 mcp = FastMCP("Explorium", dependencies=["requests", "pydantic", "dotenv"])
 
@@ -21,7 +16,7 @@ def make_api_request(url, payload, headers=None):
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "api_key": EXPLORIUM_API_KEY,
+            "api_key": os.environ.get("EXPLORIUM_API_KEY"),
         }
 
     try:
