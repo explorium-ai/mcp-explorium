@@ -4,6 +4,7 @@ import { MCPToolName } from "./ai/toolTypes";
 import { Check, Frown, LoaderCircle, X } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { cn } from "@/lib/utils";
 
 interface ChatMessagesProps {
   messages: Message[];
@@ -35,15 +36,24 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  let lastHumanMessage = "";
+
   return (
     <div className="flex-1 overflow-y-auto py-2 gap-2 flex flex-col">
       <div className="w-[748px] mx-auto">
         {messages.map((message, index) => {
+          const isPlaceholder = message.id === "placeholder";
           if (message.type === "human") {
+            if (isPlaceholder && lastHumanMessage === message.content) {
+              return null;
+            }
+
+            lastHumanMessage = message.content as string;
             return (
               <HumanMessage
                 key={message.id}
                 content={message.content as string}
+                placeholder={isPlaceholder}
               />
             );
           }
@@ -113,9 +123,20 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
   );
 }
 
-function HumanMessage({ content }: { content: string }) {
+function HumanMessage({
+  content,
+  placeholder,
+}: {
+  content: string;
+  placeholder?: boolean;
+}) {
   return (
-    <div className="max-w-2/3 w-fit py-2 px-3 bg-[#286167] rounded ml-auto my-4">
+    <div
+      className={cn(
+        "max-w-2/3 w-fit py-2 px-3 bg-[#286167] rounded ml-auto my-4",
+        placeholder && "opacity-80"
+      )}
+    >
       <div className="break-words text-white">{content}</div>
     </div>
   );
@@ -225,7 +246,7 @@ function UsingToolMessage({
   partialJson: string;
 }) {
   return (
-    <div className="flex items-center gap-2 my-4 h-8">
+    <div className="flex items-center gap-2 my-4 h-8 animate-in fade-in">
       <LoaderCircle className="animate-spin w-4 text-gray-600" />
       <div className="text-sm text-gray-600 italic">
         {getUsingToolMessage(toolName, partialJson)}
@@ -331,12 +352,14 @@ function UsedToolMessage({
       ) : (
         <>
           {type === "success" && (
-            <div className="flex items-center justify-center bg-explorium-green rounded-full w-3 h-3 aspect-square mx-0.5">
+            <div className="flex items-center justify-center bg-explorium-green rounded-full w-3 h-3 aspect-square mx-0.5 animate-in zoom-in">
               <Check className="w-4 h-4 translate-x-0.5 -translate-y-[1px]" />
             </div>
           )}
           {type === "warning" && <Frown className="w-4 h-4 text-gray-600" />}
-          <div className="text-sm text-gray-600 italic">{text}</div>
+          <div className="text-sm text-gray-600 italic animate-in slide-in-from-left-2 animation">
+            {text}
+          </div>
         </>
       )}
     </div>
