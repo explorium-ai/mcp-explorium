@@ -1,0 +1,23 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - exploriumApiKey
+    properties:
+      exploriumApiKey:
+        type: string
+        description: The Explorium API key required for accessing the Explorium service.
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'explorium-mcp-server',
+      args: [],
+      env: { EXPLORIUM_API_KEY: config.exploriumApiKey }
+    })
+  exampleConfig:
+    exploriumApiKey: dummy_api_key_123
