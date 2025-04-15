@@ -1,4 +1,3 @@
-from . import _shared
 from ._shared import (
     mcp,
     make_api_request,
@@ -11,6 +10,9 @@ from . import models
 from pydantic import conlist, Field
 from typing import List, Dict, Any
 from functools import partial
+
+import requests
+import os
 
 from .models.enums import AutocompleteType
 
@@ -85,10 +87,6 @@ def fetch_businesses(
     }
 
     return make_api_request("businesses", payload)
-
-
-import requests
-import os
 
 
 @mcp.tool()
