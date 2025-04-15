@@ -1,3 +1,4 @@
+from . import _shared
 from ._shared import (
     mcp,
     make_api_request,
@@ -10,7 +11,6 @@ from . import models
 from pydantic import conlist, Field
 from typing import List, Dict, Any
 from functools import partial
-
 import requests
 import os
 
@@ -414,7 +414,6 @@ def enrich_businesses_linkedin_posts(
     Get LinkedIn posts for public companies.
     Returns:
     - Post text content from company LinkedIn posts
-    - Post URLs for direct access to original content
     - Engagement metrics including number of likes and comments
     - Publication dates and time since posting
     - Company display names when available
