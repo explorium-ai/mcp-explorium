@@ -17,5 +17,8 @@ class BasePaginatedResponse(BaseModel):
 
 
 class RangeInt(BaseModel):
+    """
+    A class representing a range of integers with optional lower and upper bounds.
+    """
     gte: Optional[int] = Field(default=None, description="Greater than or equal to")
     lte: Optional[int] = Field(default=None, description="Less than or equal to")
