@@ -7,6 +7,13 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel
 
 BASE_URL = "https://api.explorium.ai/v1"
+EXPLORIUM_API_KEY = os.environ.get("EXPLORIUM_API_KEY")
+
+if not EXPLORIUM_API_KEY:
+    raise ValueError(
+        "EXPLORIUM_API_KEY environment variable is not set. "
+        "Please set it to your Explorium API key."
+    )
 
 mcp = FastMCP("Explorium", dependencies=["requests", "pydantic", "dotenv"])
 
@@ -19,7 +26,7 @@ def make_api_request(url, payload, headers=None, timeout=30, max_retries=2, back
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "api_key": os.environ.get("EXPLORIUM_API_KEY"),
+            "api_key": EXPLORIUM_API_KEY,
         }
 
     full_url = f"{BASE_URL}/{url}"
