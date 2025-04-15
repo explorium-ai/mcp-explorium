@@ -4,7 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 from ._shared import BasePaginatedResponse
-from .enums import CompanyRevenue, CompanyAge, NumberOfLocations
+from .enum_types import CompanyRevenue, CompanyAge, NumberOfLocations
 
 
 class FetchBusinessesFilters(BaseModel):

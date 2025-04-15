@@ -4,7 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 from ._shared import BasePaginatedResponse, RangeInt
-from .enums import JobLevel, JobDepartment
+from .enum_types import JobLevel, JobDepartment, NumberOfEmployeesRange
 
 
 class Prospect(BaseModel):
@@ -100,7 +100,7 @@ class FetchProspectsFilters(BaseModel):
         examples=[["Google", "Microsoft"]]
     )
 
-    company_size: Optional[list[str]] = Field(
+    company_size: Optional[list[NumberOfEmployeesRange]] = Field(
         default=None,
         description="Filter prospects by the employee count range of their company (e.g., '11-50', '51-200').",
         examples=[["11-50", "51-200"]]

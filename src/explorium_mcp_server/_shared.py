@@ -22,9 +22,28 @@ if not EXPLORIUM_API_KEY:
 mcp = FastMCP("Explorium", dependencies=["requests", "pydantic", "dotenv"])
 
 
-def make_api_request(url, payload, headers=None, timeout=30, max_retries=2, backoff_factor=0.3):
+def make_api_request(
+        url: str,
+        payload=None,
+        headers=None,
+        timeout=30,
+        max_retries=2,
+        backoff_factor=0.3,
+        method: str = "POST",
+        params: dict | None = None
+):
     """
-    Makes an API request to the specified endpoint with a JSON payload, using retries on certain failures.
+    Makes an API request to the specified endpoint with retries on certain failures.
+
+    :param url: Relative path to the API endpoint.
+    :param payload: Request payload (used in POST/PUT/PATCH).
+    :param headers: Optional request headers.
+    :param timeout: Timeout for the request in seconds.
+    :param max_retries: Maximum number of retry attempts.
+    :param backoff_factor: Exponential backoff factor.
+    :param method: HTTP method to use ('GET', 'POST', 'PUT', 'DELETE', etc.).
+    :param params: Query parameters for GET or other requests.
+    :return: Parsed JSON response or error info.
     """
     if headers is None:
         headers = {
@@ -35,31 +54,43 @@ def make_api_request(url, payload, headers=None, timeout=30, max_retries=2, back
 
     full_url = f"{BASE_URL}/{url}"
 
-    # Convert the payload to a serializable format
-    serializable_payload = pydantic_model_to_serializable(payload)
+    if payload is not None:
+        payload = pydantic_model_to_serializable(payload)
 
-    # Define a helper function that will be retried on request exceptions.
     @backoff.on_exception(
         backoff.expo,
         requests.RequestException,
         max_tries=max_retries,
         factor=backoff_factor
     )
-    def do_post():
-        logger.info(f"Sending POST request to {full_url}, payload: {serializable_payload}")
-        response = requests.post(full_url, json=serializable_payload, headers=headers, timeout=timeout)
-        response.raise_for_status()  # Raise an error for non-2xx responses
+    def do_request():
+        logger.info(f"Sending {method.upper()} request to {full_url}, payload: {payload}, params: {params}")
+        response = requests.request(
+            method=method.upper(),
+            url=full_url,
+            json=payload if method.upper() in {"POST", "PUT", "PATCH"} else None,
+            params=params,
+            headers=headers,
+            timeout=timeout
+        )
+        response.raise_for_status()
         return response
 
     try:
-        response = do_post()
+        response = do_request()
+        response.raise_for_status()  # Raise an error for non-2xx responses
         return response.json()
     except requests.RequestException as e:
-        # Return error information, including the HTTP status code if available.
-        logger.warning(f"Failed to send POST request to {full_url}: {e}")
+        logger.warning(f"Failed to send {method.upper()} request to {full_url}: {e}")
         return {
             "error": str(e),
             "status_code": getattr(e.response, "status_code", None),
+        }
+    except Exception as e:
+        logger.error(f"Unexpected error during request: {e}")
+        return {
+            "error": str(e),
+            "status_code": None,
         }
 
 

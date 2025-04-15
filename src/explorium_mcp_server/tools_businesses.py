@@ -1,20 +1,18 @@
 from . import _shared
+from functools import partial
+from typing import List, Dict, Any, Literal
+
+from pydantic import conlist, Field
+
+from . import models
 from ._shared import (
     mcp,
     make_api_request,
     enum_list_to_serializable,
     pydantic_model_to_serializable,
     get_filters_payload,
-    BASE_URL,
 )
-from . import models
-from pydantic import conlist, Field
-from typing import List, Dict, Any
-from functools import partial
-import requests
-import os
-
-from .models.enums import AutocompleteType
+from .models.enum_types import AutocompleteType
 
 business_ids_field = partial(
     Field, description="List of Explorium business IDs from match_businesses"
@@ -89,6 +87,7 @@ def fetch_businesses(
     return make_api_request("businesses", payload)
 
 
+# There is a bug in claude desktop that you cannot use enum
 @mcp.tool()
 def autocomplete(
         field: AutocompleteType,
@@ -125,17 +124,7 @@ def autocomplete(
     - When looking for 'saas' in categories, use 'software'
     - Use 'country' to get the country code
     """
-    headers = {
-        "accept": "application/json",
-        "api_key": os.environ.get("EXPLORIUM_API_KEY"),
-    }
-
-    response = requests.get(
-        f"{BASE_URL}/businesses/autocomplete",
-        headers=headers,
-        params={"field": field, "query": query},
-    )
-    return response.json()
+    return make_api_request("businesses/autocomplete", method="GET", params={"field": field, "query": query})
 
 
 @mcp.tool()
