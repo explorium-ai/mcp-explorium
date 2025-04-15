@@ -3,14 +3,16 @@ from ._shared import (
     mcp,
     make_api_request,
     enum_list_to_serializable,
+    pydantic_model_to_serializable,
     get_filters_payload,
     BASE_URL,
-    EXPLORIUM_API_KEY,
 )
 from . import models
 from pydantic import conlist, Field
-from typing import List, Dict, Any, Literal
+from typing import List, Dict, Any
 from functools import partial
+
+from .models.enums import AutocompleteType
 
 business_ids_field = partial(
     Field, description="List of Explorium business IDs from match_businesses"
@@ -19,9 +21,9 @@ business_ids_field = partial(
 
 @mcp.tool()
 def match_businesses(
-    businesses_to_match: conlist(
-        models.businesses.MatchBusinessInput, min_length=1, max_length=50
-    ),
+        businesses_to_match: conlist(
+            models.businesses.MatchBusinessInput, min_length=1, max_length=50
+        ),
 ):
     """
     Get the Explorium business IDs from business name and/or domain in bulk.
@@ -45,14 +47,14 @@ def match_businesses(
 
 @mcp.tool()
 def fetch_businesses(
-    filters: models.businesses.FetchBusinessesFilters,
-    size: int = Field(
-        default=1000, le=1000, description="The number of businesses to return"
-    ),
-    page_size: int = Field(
-        default=100, le=100, description="The number of businesses to return per page"
-    ),
-    page: int = Field(default=1, description="The page number to return"),
+        filters: models.businesses.FetchBusinessesFilters,
+        size: int = Field(
+            default=1000, le=1000, description="The number of businesses to return"
+        ),
+        page_size: int = Field(
+            default=5, le=100, description="The number of businesses to return per page - recommended: 5"
+        ),
+        page: int = Field(default=1, description="The page number to return"),
 ):
     """
     Fetch businesses from the Explorium API filtered by various criteria.
@@ -73,7 +75,10 @@ def fetch_businesses(
     payload = {
         "mode": "full",
         "size": size,
-        "page_size": page_size,
+        "page_size": min(
+            pydantic_model_to_serializable(page_size),
+            pydantic_model_to_serializable(size),
+        ),
         "page": page,
         "filters": get_filters_payload(filters),
         "request_context": {},
@@ -83,41 +88,40 @@ def fetch_businesses(
 
 
 import requests
+import os
 
 
 @mcp.tool()
 def autocomplete(
-    field: Literal[
-        "country",
-        "region_country_code",
-        "google_category",
-        "naics_category",
-        "linkedin_category",
-        "company_tech_stack_tech",
-        "job_title",
-        "company_size",
-        "company_revenue",
-        "company_age",
-        "job_department",
-        "job_level",
-    ],
-    query: str | int = Field(description="The query to autocomplete"),
+        field: AutocompleteType,
+        query: str | int = Field(description="The query to autocomplete"),
 ):
     """
     Autocomplete values for various business fields based on a query string.
     You MUST call this tool before using any of the following filters:
-    - linkedin_category
+    - country
+    - country_code
+    - region_country_code
     - google_category
     - naics_category
-    - region_country_code
+    - linkedin_category
+    - company_tech_stack_tech
+    - company_tech_stack_categories
+    - job_title
+    - company_size
+    - company_revenue
+    - number_of_locations
+    - company_age
+    - job_department
+    - job_level
+    - city_region_country
+    - company_name
+
+    Use this tool to get a list of possible enum values for filters.
+    Call this tool simultaneously as many times as possible. Do not call it
+    sequentially.
 
     Prefer to use linkedin_category over google_category.
-
-    Do NOT use this tool if you already have a list of available values
-    for emum fields, such as:
-    - company_size
-    - company_age
-    - company_revenue
 
     Hints:
     - When looking for 'saas' in categories, use 'software'
@@ -125,7 +129,7 @@ def autocomplete(
     """
     headers = {
         "accept": "application/json",
-        "api_key": EXPLORIUM_API_KEY,
+        "api_key": os.environ.get("EXPLORIUM_API_KEY"),
     }
 
     response = requests.get(
@@ -138,13 +142,13 @@ def autocomplete(
 
 @mcp.tool()
 def fetch_businesses_events(
-    business_ids: conlist(str, min_length=1, max_length=20) = business_ids_field(),
-    event_types: List[models.businesses.BusinessEventType] = Field(
-        description="List of event types to fetch"
-    ),
-    timestamp_from: str = Field(description="ISO 8601 timestamp"),
-    # TODO: This is not implemented yet
-    # timestamp_to: str | None = Field(default=None, description="ISO 8601 timestamp"),
+        business_ids: conlist(str, min_length=1, max_length=20) = business_ids_field(),
+        event_types: List[models.businesses.BusinessEventType] = Field(
+            description="List of event types to fetch"
+        ),
+        timestamp_from: str = Field(description="ISO 8601 timestamp"),
+        # TODO: This is not implemented yet
+        # timestamp_to: str | None = Field(default=None, description="ISO 8601 timestamp"),
 ) -> Dict[str, Any]:
     """
     Retrieves business-related events from the Explorium API in bulk.
@@ -162,12 +166,12 @@ def fetch_businesses_events(
     # if timestamp_to:
     #     payload["timestamp_to"] = timestamp_to
 
-    return make_api_request("businesses/events", payload)
+    return make_api_request("businesses/events", payload, timeout=120)
 
 
 @mcp.tool()
 def fetch_businesses_statistics(
-    filters: models.businesses.FetchBusinessesFilters,
+        filters: models.businesses.FetchBusinessesFilters,
 ):
     """
     Fetch aggregated insights into businesses by industry, revenue, employee count, and geographic distribution.
@@ -183,7 +187,7 @@ def fetch_businesses_statistics(
 
 @mcp.tool()
 def enrich_businesses_firmographics(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get firmographics data in bulk.
@@ -211,7 +215,7 @@ def enrich_businesses_firmographics(
 
 @mcp.tool()
 def enrich_businesses_technographics(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get technographics data in bulk.
@@ -250,7 +254,7 @@ def enrich_businesses_technographics(
 
 @mcp.tool()
 def enrich_businesses_company_ratings(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get internal company ratings in bulk.
@@ -270,10 +274,10 @@ def enrich_businesses_company_ratings(
 
 @mcp.tool()
 def enrich_businesses_financial_metrics(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-    date: str | None = Field(
-        default=None, description="Optional ISO 8601 timestamp for financial metrics"
-    ),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        date: str | None = Field(
+            default=None, description="Optional ISO 8601 timestamp for financial metrics"
+        ),
 ):
     """
     Get financial metrics for public companies in bulk.
@@ -298,7 +302,7 @@ def enrich_businesses_financial_metrics(
 
 @mcp.tool()
 def enrich_businesses_funding_and_acquisitions(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get businesses funding and acquisition history in bulk.
@@ -320,7 +324,7 @@ def enrich_businesses_funding_and_acquisitions(
 
 @mcp.tool()
 def enrich_businesses_challenges(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get insights on the challenges, breaches, and competition of public companies.
@@ -343,7 +347,7 @@ def enrich_businesses_challenges(
 
 @mcp.tool()
 def enrich_businesses_competitive_landscape(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get insights on the market landscape of public companies.
@@ -362,7 +366,7 @@ def enrich_businesses_competitive_landscape(
 
 @mcp.tool()
 def enrich_businesses_strategic_insights(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get strategic insights for public companies.
@@ -386,7 +390,7 @@ def enrich_businesses_strategic_insights(
 
 @mcp.tool()
 def enrich_businesses_workforce_trends(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get workforce trends and department composition for companies.
@@ -406,7 +410,7 @@ def enrich_businesses_workforce_trends(
 
 @mcp.tool()
 def enrich_businesses_linkedin_posts(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
 ):
     """
     Get LinkedIn posts for public companies.
@@ -428,11 +432,11 @@ def enrich_businesses_linkedin_posts(
 
 @mcp.tool()
 def enrich_businesses_website_changes(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-    keywords: List[str] | None = Field(
-        default=None,
-        description="List of keywords to search for in website changes",
-    ),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        keywords: List[str] | None = Field(
+            default=None,
+            description="List of keywords to search for in website changes",
+        ),
 ):
     """
     Get website changes for public companies.
@@ -457,11 +461,11 @@ def enrich_businesses_website_changes(
 
 @mcp.tool()
 def enrich_businesses_website_keywords(
-    business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-    keywords: List[str] | None = Field(
-        default=None,
-        description="List of keywords to search for in website keywords",
-    ),
+        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        keywords: List[str] | None = Field(
+            default=None,
+            description="List of keywords to search for in website keywords",
+        ),
 ):
     """
     Get website keywords for public companies.
