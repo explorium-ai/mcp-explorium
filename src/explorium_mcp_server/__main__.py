@@ -1,11 +1,11 @@
 from . import tools_businesses
 from . import tools_prospects
 
-from ._shared import mcp
+from ._shared import mcp, logger
 
 
 def main():
-    print("Starting Explorium MCP server...")
+    logger.info("Starting Explorium MCP Server")
     mcp.run()
 
 
