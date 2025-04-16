@@ -96,9 +96,9 @@ def autocomplete(
     """
     Autocomplete values for various business fields based on a query string.
     You MUST call this tool before using any of the following filters:
-    - country
     - country_code
     - region_country_code
+    - city_region_country
     - google_category
     - naics_category
     - linkedin_category
@@ -111,7 +111,6 @@ def autocomplete(
     - company_age
     - job_department
     - job_level
-    - city_region_country
     - company_name
 
     Use this tool to get a list of possible enum values for filters.
