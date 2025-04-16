@@ -419,7 +419,7 @@ def enrich_businesses_linkedin_posts(
 @mcp.tool()
 def enrich_businesses_website_changes(
         business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        keywords: Optional[str] = Field(
+        keywords: Optional[List[str]] = Field(
             default=None,
             description="List of keywords to search for in website changes",
         ),
