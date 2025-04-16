@@ -150,20 +150,20 @@ class ProspectMatchInput(BaseModel):
     phone number, LinkedIn URL, or business ID can also be provided to enhance matching precision.
     """
 
-    email: str | None = Field(default=None, description="The prospect's email address.")
-    phone_number: str | None = Field(
+    email: Optional[str] = Field(default=None, description="The prospect's email address.")
+    phone_number: Optional[str] = Field(
         default=None, description="The prospect's phone number."
     )
-    full_name: str | None = Field(
+    full_name: Optional[str] = Field(
         default=None,
         description="The prospect's full name (can only be used together with company_name).",
     )
-    company_name: str | None = Field(
+    company_name: Optional[str] = Field(
         default=None,
         description="The prospect's company name (can only be used together with full_name).",
     )
-    linkedin: str | None = Field(default=None, description="Linkedin url.")
-    business_id: str | None = Field(
+    linkedin: Optional[str] = Field(default=None, description="Linkedin url.")
+    business_id: Optional[str] = Field(
         default=None, description="Filters the prospect to match the given business id."
     )
 

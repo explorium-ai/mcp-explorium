@@ -1,6 +1,7 @@
 import logging
 import os
 from enum import Enum
+from typing import Optional
 
 import backoff
 import requests
@@ -30,7 +31,7 @@ def make_api_request(
         max_retries=2,
         backoff_factor=0.3,
         method: str = "POST",
-        params: dict | None = None
+        params: Optional[dict] = None
 ):
     """
     Makes an API request to the specified endpoint with retries on certain failures.

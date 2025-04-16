@@ -1,6 +1,6 @@
 from . import _shared
 from functools import partial
-from typing import List, Dict, Any, Literal
+from typing import List, Dict, Any, Literal, Optional
 
 from pydantic import conlist, Field
 
@@ -135,7 +135,7 @@ def fetch_businesses_events(
         ),
         timestamp_from: str = Field(description="ISO 8601 timestamp"),
         # TODO: This is not implemented yet
-        # timestamp_to: str | None = Field(default=None, description="ISO 8601 timestamp"),
+        # timestamp_to: Optional[str] = Field(default=None, description="ISO 8601 timestamp"),
 ) -> Dict[str, Any]:
     """
     Retrieves business-related events from the Explorium API in bulk.
@@ -262,7 +262,7 @@ def enrich_businesses_company_ratings(
 @mcp.tool()
 def enrich_businesses_financial_metrics(
         business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        date: str | None = Field(
+        date: Optional[str] = Field(
             default=None, description="Optional ISO 8601 timestamp for financial metrics"
         ),
 ):
@@ -419,7 +419,7 @@ def enrich_businesses_linkedin_posts(
 @mcp.tool()
 def enrich_businesses_website_changes(
         business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        keywords: List[str] | None = Field(
+        keywords: Optional[str] = Field(
             default=None,
             description="List of keywords to search for in website changes",
         ),
@@ -448,7 +448,7 @@ def enrich_businesses_website_changes(
 @mcp.tool()
 def enrich_businesses_website_keywords(
         business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        keywords: List[str] | None = Field(
+        keywords: Optional[List[str]] = Field(
             default=None,
             description="List of keywords to search for in website keywords",
         ),
