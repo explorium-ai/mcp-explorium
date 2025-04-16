@@ -5,7 +5,6 @@ from pydantic import Field
 
 AutocompleteType = Annotated[
     Literal[
-        "country",
         "region_country_code",
         "google_category",
         "naics_category",
