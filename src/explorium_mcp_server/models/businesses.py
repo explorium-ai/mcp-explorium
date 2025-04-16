@@ -1,137 +1,108 @@
-from pydantic import BaseModel, Field
-from typing import Literal, Optional
 from enum import Enum
+from typing import Optional, List
+
+from pydantic import BaseModel, Field
+
 from ._shared import BasePaginatedResponse
-
-
-# Fetch Businesses Filters
-class CompanySize(str, Enum):
-    """All available company size ranges.
-    Possible values:
-    SIZE_1_10: 1-10 employees
-    SIZE_11_50: 11-50 employees
-    SIZE_51_200: 51-200 employees
-    SIZE_201_500: 201-500 employees
-    SIZE_501_1000: 501-1000 employees
-    SIZE_1001_5000: 1001-5000 employees
-    SIZE_5001_10000: 5001-10000 employees
-    SIZE_10001_PLUS: 10001+ employees
-
-    """
-
-    SIZE_1_10 = "1-10"
-    SIZE_11_50 = "11-50"
-    SIZE_51_200 = "51-200"
-    SIZE_201_500 = "201-500"
-    SIZE_501_1000 = "501-1000"
-    SIZE_1001_5000 = "1001-5000"
-    SIZE_5001_10000 = "5001-10000"
-    SIZE_10001_PLUS = "10001+"
-
-
-class CompanyRevenue(str, Enum):
-    """
-    All available revenue ranges in annual $:
-    REV_0_500K: $0-500K yearly revenue
-    REV_500K_1M: $500k-1M yearly revenue
-    REV_1M_5M: $1M-5M yearly revenue
-    REV_5M_10M: $5M-10M yearly revenue
-    REV_10M_25M: $10M-25M yearly revenue
-    REV_25M_75M: $25M-75M yearly revenue
-    REV_75M_200M: $75M-200M yearly revenue
-    REV_200M_500M: $200M-500M yearly revenue
-    REV_500M_1B: $500M-1B yearly revenue
-    REV_1B_10B: $1B-10B yearly revenue
-    REV_10B_100B: $10B-100B yearly revenue
-    REV_100B_1T: $100B-1T yearly revenue
-    REV_1T_10T: $1T-10T yearly revenue
-    REV_10T_PLUS: $10T+ yearly revenue
-    """
-
-    REV_0_500K = "0-500K"
-    REV_500K_1M = "500k-1M"
-    REV_1M_5M = "1M-5M"
-    REV_5M_10M = "5M-10M"
-    REV_10M_25M = "10M-25M"
-    REV_25M_75M = "25M-75M"
-    REV_75M_200M = "75M-200M"
-    REV_200M_500M = "200M-500M"
-    REV_500M_1B = "500M-1B"
-    REV_1B_10B = "1B-10B"
-    REV_10B_100B = "10B-100B"
-    REV_100B_1T = "100B-1T"
-    REV_1T_10T = "1T-10T"
-    REV_10T_PLUS = "10T+"
-
-
-class CompanyAge(str, Enum):
-    """All available company age ranges in years:
-    AGE_0_3: 0-3 years
-    AGE_4_10: 4-10 years
-    AGE_11_20: 11-20 years
-    AGE_20_PLUS: 20+ years
-    """
-
-    AGE_0_3 = "0-3"
-    AGE_4_10 = "4-10"
-    AGE_11_20 = "11-20"
-    AGE_20_PLUS = "20+"
+from .enum_types import CompanyRevenue, CompanyAge, NumberOfLocations
 
 
 class FetchBusinessesFilters(BaseModel):
     """
-    Business search filters.
-    Before calling a tool that uses this filter, call the autocomplete tool to get the list of available values,
-    especially when using linkedin_category, google_category, naics_category, and region_country_code.
-    Only one category can be present at a time (google_category, naics_category, or linkedin_category).
-    """
+      Business search filters.
+      Before calling a tool that uses this filter, call the autocomplete tool to get the list of available values,
+      especially when using linkedin_category, google_category, naics_category, and region_country_code.
+      Only one category can be present at a time (google_category, naics_category, or linkedin_category).
+      """
 
-    country_code: None | list[str] = Field(
+    country_code: Optional[List[str]] = Field(
         default=None,
-        description="A list of lowercase two-letter ISO country codes.",
+        description="List of ISO Alpha-2 country codes (e.g., 'US', 'IL') to filter companies by their main headquarters country.",
+        examples=[["US", "IL"]]
     )
-    region_country_code: None | list[str] = Field(
+    region_country_code: Optional[List[str]] = Field(
         default=None,
-        description="A list of lowercase region-country codes in the format 'REGION-CC' where CC is the two-letter ISO country code.",
+        description="List of region-country codes (e.g., 'US-CA', 'IL-TA') to filter companies by their specific region.",
+        examples=[["US-CA", "IL-TA"]]
     )
-    company_size: None | list[CompanySize] = Field(
-        default=None, description="Filters accounts based on the number of employees."
-    )
-    company_revenue: None | list[CompanyRevenue] = Field(
-        default=None, description="Filters accounts based on the annual revenue."
-    )
-    company_age: None | list[CompanyAge] = Field(
-        default=None, description="Filters accounts by the age of the company in years."
-    )
-    google_category: None | list[str] = Field(
+    company_size: Optional[List[str]] = Field(
         default=None,
-        description="Filters accounts by categories as classified in Google.",
+        description="Filter companies based on number of employees (e.g.,'1-10', '51-200').",
+        examples=[["11-50", "201-500"]]
     )
-    naics_category: None | list[str] = Field(
+    company_revenue: Optional[List[CompanyRevenue]] = Field(
         default=None,
-        description='Filters accounts by the North American Industry Classification System categories. Example: ["23", "5611"]',
+        description="Filter companies by annual revenue range in USD (e.g., '1M-5M', '500M-1B').",
+        examples=[["200M-500M", "1B-10B"]]
     )
-    linkedin_category: None | list[str] = Field(
+    company_age: Optional[List[CompanyAge]] = Field(
         default=None,
-        description="Filters accounts by categories as used in LinkedIn.",
+        description="Filter companies by age since founding (in years).",
+        examples=[["0-3", "11-20"]]
+    )
+    google_category: Optional[List[str]] = Field(
+        default=None,
+        description="Filter companies by Google industry classification (e.g., 'Retail', 'Construction').",
+        examples=[["Retail"]]
+    )
+    naics_category: Optional[List[str]] = Field(
+        default=None,
+        description="Filter companies by NAICS industry codes (e.g., '541512' for software services).",
+        examples=[["541512", "611310"]]
+    )
+    linkedin_category: Optional[List[str]] = Field(
+        default=None,
+        description="Filter companies by LinkedIn industry categories (e.g., 'Market research', 'Software').",
+        examples=[["Market research", "Software"]]
+    )
+    company_tech_stack_category: Optional[List[str]] = Field(
+        default=None,
+        description="Filter companies by broader technology categories (e.g., 'DevOps and Development', 'Marketing Tools'),"
+                    " autocomplete named 'company_tech_stack_categories'.",
+        examples=[["DevOps and Development"]]
+    )
+    company_tech_stack_tech: Optional[List[str]] = Field(
+        default=None,
+        description="Filter by specific technologies used by the company (e.g., 'Salesforce', 'Amazon RDS').",
+        examples=[["Microsoft System Center", "Amazon RDS for MySQL"]]
+    )
+    company_name: Optional[List[str]] = Field(
+        default=None,
+        description="Filter companies by exact or partial name match (e.g., 'Google', 'Stripe').",
+        examples=[["Microsoft", "Google"]]
+    )
+    number_of_locations: Optional[List[NumberOfLocations]] = Field(
+        default=None,
+        description="Filter by how many physical office locations the company has.",
+        examples=[["2-5", "101-1000"]]
+    )
+    city_region_country: Optional[List[str]] = Field(
+        default=None,
+        description="Filter by location string combining city, region, and country (e.g., 'Tel Aviv, IL', 'Miami, FL, US').",
+        examples=[["Tel Aviv, IL", "Miami, FL, US"]]
+    )
+    website_keywords: Optional[List[str]] = Field(
+        default=None,
+        description="Filter companies by keywords found on their website (e.g., 'AI', 'ecommerce', 'fintech').",
+        examples=[["ecommerce", "retail", "AI"]]
     )
 
 
 class Business(BaseModel):
     business_id: str
     name: str
-    domain: str | None
-    logo: str | None
+    domain: Optional[str] = Field(default=None)
+    logo: Optional[str] = Field(default=None)
     country_name: str
     number_of_employees_range: str
     yearly_revenue_range: str
-    website: str | None
-    business_description: str | None
-    region: str | None
-    naics: int | None
-    naics_description: str | None
-    sic_code: str | None
-    sic_code_description: str | None
+    website: Optional[str] = Field(default=None)
+    business_description: Optional[str] = Field(default=None)
+    region: Optional[str] = Field(default=None)
+    naics: Optional[int] = Field(default=None)
+    naics_description: Optional[str] = Field(default=None)
+    sic_code: Optional[str] = Field(default=None)
+    sic_code_description: Optional[str] = Field(default=None)
 
 
 class FetchBusinessesResponse(BasePaginatedResponse):
@@ -139,10 +110,14 @@ class FetchBusinessesResponse(BasePaginatedResponse):
 
 
 class MatchBusinessInput(BaseModel):
-    """Input for matching businesses. Use multiple identifiers for higher match accuracy."""
+    """
+    Business matching input.
 
-    name: Optional[str]
-    domain: Optional[str]
+    Provide one or more identifiers to enhance matching accuracy. Use both name and domain when available.
+    """
+
+    name: Optional[str] = Field(default=None, description="The business name.")
+    domain: Optional[str] = Field(default=None, description="The business domain or website URL.")
 
 
 class BusinessEventType(str, Enum):
