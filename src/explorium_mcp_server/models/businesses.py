@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-from ._shared import BasePaginatedResponse
+from .shared import BasePaginatedResponse
 from .enum_types import CompanyRevenue, CompanyAge, NumberOfLocations
 
 

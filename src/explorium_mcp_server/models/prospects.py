@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
-from ._shared import BasePaginatedResponse, RangeInt
+from .shared import BasePaginatedResponse, RangeInt
 from .enum_types import JobLevel, JobDepartment, NumberOfEmployeesRange
 
 

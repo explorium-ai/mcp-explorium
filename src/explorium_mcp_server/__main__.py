@@ -1,7 +1,7 @@
-from . import tools_businesses
-from . import tools_prospects
+from .tools import businesses  ## noqa: F401
+from .tools import prospects  ## noqa: F401
 
-from ._shared import mcp, logger
+from .tools.shared import mcp, logger
 
 
 def main():

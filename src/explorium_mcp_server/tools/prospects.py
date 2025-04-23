@@ -1,14 +1,15 @@
-from . import _shared
-from ._shared import (
+from functools import partial
+from typing import List
+
+from pydantic import conlist, Field
+
+from explorium_mcp_server import models
+from explorium_mcp_server.tools.shared import (
     mcp,
     make_api_request,
     get_filters_payload,
     enum_list_to_serializable,
 )
-from pydantic import conlist, Field
-from typing import List
-from . import models
-from functools import partial
 
 prospect_ids_field = partial(
     Field, description="List of up to 50 Explorium prospect IDs from match_prospects"
