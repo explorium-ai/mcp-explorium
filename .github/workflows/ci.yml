@@ -1,0 +1,95 @@
+name: mcp-explorerium-ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+env:
+  # global environment vars
+  SETUPTOOLS_USE_DISTUTILS: stdlib
+  UV_SYSTEM_PYTHON: "1"
+
+jobs:
+  check_version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # pull all tags
+      - name: Compare versions
+        run: |
+          # Extract version from pyproject.toml
+          current=v$(grep '^version' pyproject.toml | head -1 | cut -d'"' -f2)
+          # Fallback if no tags exist yet
+          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.0')
+
+          echo "pyproject.toml → $current"
+          echo "git tags        → $latest"
+
+          if [[ "$current" == "$latest" ]]; then
+            echo "::error::Tag $current already exists — bump the version"
+            exit 1
+          fi
+          echo "✓ version check passed ($current > $latest)"
+
+  lint:
+    needs: check_version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.11" ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras --dev
+      - run: uv run make lint
+
+  test:
+    needs: check_version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.11" ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras --dev
+      - run: uv run make test_with_report
+
+  deploy:
+    needs: [ lint, test ]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup uv CLI
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Tag release
+        run: |
+          version=v$(grep '^version' pyproject.toml | head -1 | cut -d'"' -f2)
+          git config --local user.email "github-action@users.noreply.github.com"
+          git config --local user.name  "GitHub Action"
+          git tag "$version"
+          git push --tags
