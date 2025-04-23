@@ -1,6 +1,6 @@
 # Explorium API MCP Server
 
-[![mcp-explorerium-ci](https://github.com/explorium-ai/mcp-explorium-private/actions/workflows/ci.yml/badge.svg)](https://github.com/explorium-ai/mcp-explorium-private/actions/workflows/ci.yml)
+[![mcp-explorerium-ci](https://github.com/explorium-ai/mcp-explorium/actions/workflows/ci.yml/badge.svg)](https://github.com/explorium-ai/mcp-explorium/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/explorium-mcp-server.svg)](https://badge.fury.io/py/explorium-mcp-server)
 [![Python Versions](https://img.shields.io/pypi/pyversions/explorium-mcp-server.svg)](https://pypi.org/project/explorium-mcp-server/)
 
@@ -44,8 +44,8 @@ The package requires Python 3.10 or later.
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/explorium-ai/mcp-explorium-private.git
-cd mcp-explorium-private
+git clone https://github.com/explorium-ai/mcp-explorium.git
+cd mcp-explorium
 ```
 
 2. Set up the development environment using `uv`:
@@ -145,7 +145,7 @@ You may turn on "Yolo mode" in Cursor settings to use tools without confirming u
 ## Project Structure
 
 ```
-mcp-explorium-private/
+mcp-explorium/
 ├── .github/workflows/        # CI/CD configuration
 │   └── ci.yml               # Main CI workflow
 ├── src/                      # Source code
