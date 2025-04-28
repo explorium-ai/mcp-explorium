@@ -37,7 +37,7 @@ class FetchProspectsFilters(BaseModel):
     """
 
     has_email: Optional[bool] = Field(
-        default=False,
+        default=None,
         description="Filter prospects to include only those with a verified email address.",
         examples=[True]
     )
