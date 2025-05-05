@@ -86,13 +86,12 @@ mcp dev local_dev_server.py
 {
   "mcpServers": {
     "Explorium": {
-      "command": "python",
+      "command": "<PATH_TO_UVX>",
       "args": [
-        "-m",
-        "explorium_mcp_server"
+        "explorium-mcp-server"
       ],
       "env": {
-        "EXPLORIUM_API_KEY": "YOUR_API_KEY"
+        "EXPLORIUM_API_KEY": "<YOUR_API_KEY>"
       }
     }
   }
