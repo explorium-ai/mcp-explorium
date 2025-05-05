@@ -123,5 +123,5 @@ JobLevel = Annotated[
         "unpaid",
         "unknown",
     ],
-    Field(description="Seniority level of the job (e.g., 'vp', 'manager', 'entry').")
-]
+    Field(
+        description="Seniority level of the job (e.g., 'vp', 'manager', 'entry'). cxo is a catch-all for C-level positions such as CEO, CTO, etc.")]
