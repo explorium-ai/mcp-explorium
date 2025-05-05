@@ -111,7 +111,7 @@ def autocomplete(
     - company_age
     - job_department
     - job_level
-      ▸ For C-suite titles (e.g., CEO, CTO), **search for "cxo"** and select the appropriate result.
+      - For C-suite titles (e.g., CEO, CTO), **search for "cxo"** and select the appropriate result.
     - city_region_country
     - company_name
 
