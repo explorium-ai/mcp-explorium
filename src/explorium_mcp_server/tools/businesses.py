@@ -95,7 +95,7 @@ def autocomplete(
     """
     Autocomplete values for business filters based on a query.
 
-    You MUST call this tool before using any of these filters:
+    Use this tool **only** for the following filters. If the filter is not listed below, do **not** use autocomplete:
     - country
     - country_code
     - region_country_code
@@ -115,9 +115,10 @@ def autocomplete(
     - city_region_country
     - company_name
 
-    Use this tool to get the list of accepted enum values.
-    Make autocomplete calls **in parallel**, not sequentially.
-    Prefer `linkedin_category` over `google_category`.
+    Do **not** call this tool for `website_keywords` or any field not explicitly listed above.
+
+    Always call autocomplete in **parallel**, not sequentially.
+    Prefer `linkedin_category` over `google_category` when both are available.
 
     Hints:
     - When looking for 'saas' in categories, use 'software'
