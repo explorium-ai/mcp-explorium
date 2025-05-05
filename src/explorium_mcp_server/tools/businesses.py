@@ -93,8 +93,9 @@ def autocomplete(
         query: str | int = Field(description="The query to autocomplete"),
 ):
     """
-    Autocomplete values for various business fields based on a query string.
-    You MUST call this tool before using any of the following filters:
+    Autocomplete values for business filters based on a query.
+
+    You MUST call this tool before using any of these filters:
     - country
     - country_code
     - region_country_code
@@ -110,14 +111,13 @@ def autocomplete(
     - company_age
     - job_department
     - job_level
+      ▸ For C-suite titles (e.g., CEO, CTO), **search for "cxo"** and select the appropriate result.
     - city_region_country
     - company_name
 
-    Use this tool to get a list of possible enum values for filters.
-    Call this tool simultaneously as many times as possible. Do not call it
-    sequentially.
-
-    Prefer to use linkedin_category over google_category.
+    Use this tool to get the list of accepted enum values.
+    Make autocomplete calls **in parallel**, not sequentially.
+    Prefer `linkedin_category` over `google_category`.
 
     Hints:
     - When looking for 'saas' in categories, use 'software'
@@ -189,7 +189,7 @@ def enrich_businesses_firmographics(
     - Annual revenue range
     - LinkedIn industry category and profile URL
 
-    Do NOT use when:
+    **Do NOT use when**:
     - You need to find a specific employee at a company
     - Looking for leadership info of a company
     """
@@ -266,7 +266,7 @@ def enrich_businesses_financial_metrics(
         ),
 ):
     """
-    Get financial metrics for public companies in bulk.
+    Get financial metrics for **public companies only** in bulk.
     You may also use this tool when looking for leadership information (CEO, CTO, CFO, etc.)
 
     Returns:
