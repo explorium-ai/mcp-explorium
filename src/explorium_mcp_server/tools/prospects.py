@@ -89,7 +89,7 @@ def fetch_prospects(
        Rules:
        - Only one of `linkedin_category`, `google_category`, or `naics_category` may be set per request.
        - This tool returns **Prospect IDs**. Do **NOT** chain with `match_businesses`.
-       - For company­‑level searches, use `fetch_businesses` instead.
+       - For company‑level searches, use `fetch_businesses` instead.
        - If any filter is unsupported or invalid, stop and alert the user.
        """
 
