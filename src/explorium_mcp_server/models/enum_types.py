@@ -19,7 +19,13 @@ AutocompleteType = Annotated[
         "company_name",
     ],
     Field(
-        description="The field to autocomplete")
+        description=(
+            "The field to autocomplete. Use only fields listed here. "
+            "Never use autocomplete for a field not included in this list. "
+            "If a field is not listed, it either has a fixed set of allowed values "
+            "(e.g., `NumberOfEmployeesRange`), or should be used directly as-is with no autocomplete."
+        )
+    )
 ]
 
 NumberOfEmployeesRange = Annotated[
