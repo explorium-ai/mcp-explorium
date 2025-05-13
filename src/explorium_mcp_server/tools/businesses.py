@@ -1,5 +1,5 @@
 from functools import partial
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union, Optional
 
 from pydantic import conlist, Field
 
@@ -56,21 +56,35 @@ def fetch_businesses(
         page: int = Field(default=1, description="The page number to return"),
 ):
     """
-    Fetch businesses from the Explorium API filtered by various criteria.
-    You MUST call the autocomplete tool to get the list of possible values for
-    filters specified in the autocomplete tool's description.
+     Fetch businesses from the Explorium API using filter criteria.
 
-    Do NOT use this tool first if you do not have a list of available values for
-    mandatory filters specified in the autocomplete tool's description.
+     For filters backed by enums in the schema, use the enum values directly:
+     - `company_revenue`
+     - `company_age`
+     - `company_size`
+     - `number_of_locations`
 
-    This tool returns Business IDs, which can be used to fetch more information.
-    Do NOT call match_businesses afterwards.
+     For the following filters, you MUST first call the `autocomplete` tool to retrieve valid values:
+     - `linkedin_category`
+     - `company_tech_stack_categories`
+     - `job_title`
+     - `google_category`
+     - `naics_category`
+     - `country_code`
+     - `region_country_code`
+     - `company_tech_stack_category`
+     - `company_tech_stack_tech`
+     - `company_name`
+     - `city_region_country`
 
-    If a requested filter is not supported by the Explorium API, stop the
-    execution and notify the user.
+     Do NOT use this tool until all required autocomplete values have been retrieved.
 
-    If you are looking for employees at a company, use fetch_prospects next.
-    """
+     Rules:
+     - Only one of `linkedin_category`, `google_category`, or `naics_category` can be set per request.
+     - This tool returns Business IDs. Do NOT follow with `match_businesses`.
+     - To get employee data for companies, use `fetch_prospects`.
+     - If any filter is invalid or unsupported, stop and alert the user.
+     """
     payload = {
         "mode": "full",
         "size": size,
@@ -86,43 +100,20 @@ def fetch_businesses(
     return make_api_request("businesses", payload)
 
 
-# There is a bug in claude desktop that you cannot use enum
 @mcp.tool()
 def autocomplete(
         field: AutocompleteType,
-        query: str | int = Field(description="The query to autocomplete"),
+        query: Union[str, int] = Field(description="The query to autocomplete"),
 ):
     """
     Autocomplete values for business filters based on a query.
-
-    Use this tool **only** for the following filters. If the filter is not listed below, do **not** use autocomplete:
-    - country
-    - country_code
-    - region_country_code
-    - google_category
-    - naics_category
-    - linkedin_category
-    - company_tech_stack_tech
-    - company_tech_stack_categories
-    - job_title
-    - company_size
-    - company_revenue
-    - number_of_locations
-    - company_age
-    - job_department
-    - job_level
-      - For C-suite titles (e.g., CEO, CTO), **search for "cxo"** and select the appropriate result.
-    - city_region_country
-    - company_name
-
-    Do **not** call this tool for `website_keywords` or any field not explicitly listed above.
-
-    Always call autocomplete in **parallel**, not sequentially.
-    Prefer `linkedin_category` over `google_category` when both are available.
+    Never use for fields not explicitly listed (e.g., `website_keywords`).
+    Prefer `linkedin_category` over `google_category` when both apply.
+    ⚡ Always call autocomplete requests in **parallel**, not sequentially.
 
     Hints:
-    - When looking for 'saas' in categories, use 'software'
-    - Use 'country' to get the country code
+    - Searching for SaaS? Use the keyword 'software'
+    - Use 'country' to retrieve ISO codes
     """
     return make_api_request("businesses/autocomplete", method="GET", params={"field": field, "query": query})
 
@@ -419,7 +410,7 @@ def enrich_businesses_linkedin_posts(
 @mcp.tool()
 def enrich_businesses_website_changes(
         business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        keywords: List[str] | None = Field(
+        keywords: Optional[List[str]] = Field(
             default=None,
             description="List of keywords to search for in website changes",
         ),
@@ -448,7 +439,7 @@ def enrich_businesses_website_changes(
 @mcp.tool()
 def enrich_businesses_website_keywords(
         business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        keywords: List[str] | None = Field(
+        keywords: Optional[List[str]] = Field(
             default=None,
             description="List of keywords to search for in website keywords",
         ),

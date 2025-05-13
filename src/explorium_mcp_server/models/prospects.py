@@ -4,7 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 from .shared import BasePaginatedResponse, RangeInt
-from .enum_types import JobLevel, JobDepartment, NumberOfEmployeesRange
+from .enum_types import JobLevel, JobDepartment, NumberOfEmployeesRange, CompanyRevenue
 
 
 class Prospect(BaseModel):
@@ -26,15 +26,9 @@ class Prospect(BaseModel):
 
 
 class FetchProspectsFilters(BaseModel):
-    """
-    Prospect search filters.
-
-    These filters enable precise targeting of potential contacts by refining search criteria based on attributes
-    such as email and phone availability, job roles, professional experience, and company-related details.
-    When using these filters, it is advisable to call an autocomplete tool to obtain the latest list of supported values
-    for industry categories (google_category, naics_category, linkedin_category) before initiating a search.
-    Only one industry category filter should be provided at a time to avoid conflicts.
-    """
+    """Prospect search filters.
+       Only one of `linkedin_category`, `google_category`, or `naics_category` may be used per request.
+       """
 
     has_email: Optional[bool] = Field(
         default=None,
@@ -47,65 +41,65 @@ class FetchProspectsFilters(BaseModel):
         examples=[True]
     )
 
-    job_level: Optional[list[JobLevel]] = Field(
+    job_level: Optional[List[JobLevel]] = Field(
         default=None,
         description="Filter prospects based on their job seniority level (e.g., 'vp', 'director').",
         examples=[["vp", "director"]]
     )
-    job_department: Optional[list[JobDepartment]] = Field(
+    job_department: Optional[List[JobDepartment]] = Field(
         default=None,
         description="Filter prospects based on their department (e.g., 'Engineering', 'Marketing').",
         examples=[["Engineering", "Marketing"]]
     )
-    business_id: Optional[list[str]] = Field(
+    business_id: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects by specifying one or more business IDs as registered in the system. "
                     "Pass multiple IDs in a list to filter prospects that match any of the provided IDs.",
         examples=[["8adce3ca1cef0c986b22310e369a0793", "010146d2ec90d2e94b9dd85eced59d76"]]
     )
-    job_title: Optional[list[str]] = Field(
+    job_title: Optional[List[str]] = Field(
         default=None,
         description="Free text filter for prospect job titles (e.g., 'Software Engineer', 'Data Scientist').",
         examples=[["Software Engineer", "Data Scientist"]]
     )
 
-    country_code: Optional[list[str]] = Field(
+    country_code: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects based on a 2-letter ISO Alpha-2 country code representing the prospect's location (e.g., 'US', 'CA').",
         examples=[["US", "CA"]]
     )
-    region_country_code: Optional[list[str]] = Field(
+    region_country_code: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects based on a region code that combines a region identifier with the country's code (e.g., 'US-NY', 'IL-TA').",
         examples=[["US-NY", "IL-TA"]]
     )
-    company_country_code: Optional[list[str]] = Field(
+    company_country_code: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects by the 2-letter ISO Alpha-2 country code where their company is primarily located.",
         examples=[["US"]]
     )
-    company_region_country_code: Optional[list[str]] = Field(
+    company_region_country_code: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects by the region code (combining region and country) where their company is headquartered (e.g., 'US-CA').",
         examples=[["US-CA"]]
     )
-    city_region_country: Optional[list[str]] = Field(
+    city_region_country: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects using a combined city, region, and country string (e.g., 'Miami, FL, US', 'Tel Aviv, IL').",
         examples=[["Miami, FL, US", "Tel Aviv, IL"]]
     )
-    company_name: Optional[list[str]] = Field(
+    company_name: Optional[List[str]] = Field(
         default=None,
         description="Free text filter for the prospect's company name (e.g., 'Google', 'Microsoft').",
         examples=[["Google", "Microsoft"]]
     )
 
-    company_size: Optional[list[NumberOfEmployeesRange]] = Field(
+    company_size: Optional[List[NumberOfEmployeesRange]] = Field(
         default=None,
         description="Filter prospects by the employee count range of their company (e.g., '11-50', '51-200').",
         examples=[["11-50", "51-200"]]
     )
-    company_revenue: Optional[list[str]] = Field(
+    company_revenue: Optional[List[CompanyRevenue]] = Field(
         default=None,
         description="Filter prospects by the revenue range of their company (e.g., '0-500K', '1M-5M').",
         examples=[["0-500K", "1M-5M"]]
@@ -140,7 +134,7 @@ class FetchProspectsFilters(BaseModel):
 
 
 class FetchProspectsResponse(BasePaginatedResponse):
-    data: list[Prospect]
+    data: List[Prospect]
 
 
 class ProspectMatchInput(BaseModel):
@@ -150,20 +144,20 @@ class ProspectMatchInput(BaseModel):
     phone number, LinkedIn URL, or business ID can also be provided to enhance matching precision.
     """
 
-    email: str | None = Field(default=None, description="The prospect's email address.")
-    phone_number: str | None = Field(
+    email: Optional[str] = Field(default=None, description="The prospect's email address.")
+    phone_number: Optional[str] = Field(
         default=None, description="The prospect's phone number."
     )
-    full_name: str | None = Field(
+    full_name: Optional[str] = Field(
         default=None,
         description="The prospect's full name (can only be used together with company_name).",
     )
-    company_name: str | None = Field(
+    company_name: Optional[str] = Field(
         default=None,
         description="The prospect's company name (can only be used together with full_name).",
     )
-    linkedin: str | None = Field(default=None, description="Linkedin url.")
-    business_id: str | None = Field(
+    linkedin: Optional[str] = Field(default=None, description="Linkedin url.")
+    business_id: Optional[str] = Field(
         default=None, description="Filters the prospect to match the given business id."
     )
 
