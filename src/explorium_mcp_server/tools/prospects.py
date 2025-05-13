@@ -64,20 +64,34 @@ def fetch_prospects(
         page: int = Field(default=1, description="The page number to return"),
 ):
     """
-    Fetch prospects (employees) using filters such as job level, department, and other professional attributes.
+       Fetch prospects (employees) from the Explorium API using detailed filter criteria.
 
-    You MUST use the autocomplete tool to retrieve valid values for required filters before calling this tool.
+       Use enum values directly for these filters:
+       - `job_level`
+       - `job_department`
+       - `company_size`
+       - `company_revenue`
 
-    Do NOT call this tool first if you don’t have the necessary filter values.
+       Before calling, you MUST use the `autocomplete` tool to obtain valid values for:
+       - `linkedin_category`
+       - `google_category`
+       - `job_title`
+       - `country_code`
+       - `naics_category`
+       - `region_country_code`
+       - `company_region_country_code`
+       - `company_country_code`
+       - `city_region_country`
+       - `company_name`
 
-    Returns Prospect IDs for individuals at specific companies.
+       Do **NOT** call this tool until all required autocomplete values are retrieved.
 
-    If a requested filter is not supported by the Explorium API, stop execution and inform the user.
-
-    Use fetch_businesses if you're looking for companies instead.
-
-    For leadership details at public companies, use enrich_businesses_financial_metrics.
-    """
+       Rules:
+       - Only one of `linkedin_category`, `google_category`, or `naics_category` may be set per request.
+       - This tool returns **Prospect IDs**. Do **NOT** chain with `match_businesses`.
+       - For company‑level searches, use `fetch_businesses` instead.
+       - If any filter is unsupported or invalid, stop and alert the user.
+       """
 
     data = {
         "mode": "full",

@@ -14,17 +14,18 @@ AutocompleteType = Annotated[
         "company_tech_stack_tech",
         "company_tech_stack_categories",
         "job_title",
-        "company_size",
-        "company_revenue",
-        "number_of_locations",
-        "company_age",
         "job_department",
-        "job_level",
         "city_region_country",
         "company_name",
     ],
     Field(
-        description="The field to autocomplete. Must be one of the supported filters such as 'job_title' or 'company_size'.")
+        description=(
+            "The field to autocomplete. Use only fields listed here. "
+            "Never use autocomplete for a field not included in this list. "
+            "If a field is not listed, it either has a fixed set of allowed values "
+            "(e.g., `NumberOfEmployeesRange`), or should be used directly as-is with no autocomplete."
+        )
+    )
 ]
 
 NumberOfEmployeesRange = Annotated[

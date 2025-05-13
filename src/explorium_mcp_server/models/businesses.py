@@ -4,16 +4,13 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 from .shared import BasePaginatedResponse
-from .enum_types import CompanyRevenue, CompanyAge, NumberOfLocations
+from .enum_types import CompanyRevenue, CompanyAge, NumberOfLocations, NumberOfEmployeesRange
 
 
 class FetchBusinessesFilters(BaseModel):
-    """
-      Business search filters.
-      Before calling a tool that uses this filter, call the autocomplete tool to get the list of available values,
-      especially when using linkedin_category, google_category, naics_category, and region_country_code.
-      Only one category can be present at a time (google_category, naics_category, or linkedin_category).
-      """
+    """Business search filters.
+       Only one of `linkedin_category`, `google_category`, or `naics_category` may be used per request.
+       """
 
     country_code: Optional[List[str]] = Field(
         default=None,
@@ -25,7 +22,7 @@ class FetchBusinessesFilters(BaseModel):
         description="List of region-country codes (e.g., 'US-CA', 'IL-TA') to filter companies by their specific region.",
         examples=[["US-CA", "IL-TA"]]
     )
-    company_size: Optional[List[str]] = Field(
+    company_size: Optional[List[NumberOfEmployeesRange]] = Field(
         default=None,
         description="Filter companies based on number of employees (e.g.,'1-10', '51-200').",
         examples=[["11-50", "201-500"]]
@@ -106,7 +103,7 @@ class Business(BaseModel):
 
 
 class FetchBusinessesResponse(BasePaginatedResponse):
-    data: list[Business]
+    data: List[Business]
 
 
 class MatchBusinessInput(BaseModel):
