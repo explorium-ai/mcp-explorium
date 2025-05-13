@@ -116,17 +116,17 @@ class FetchProspectsFilters(BaseModel):
         examples=[{"gte": 6, "lte": 24}]
     )
 
-    google_category: Optional[list[str]] = Field(
+    google_category: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects by their company's Google industry category (e.g., 'construction').",
         examples=[["construction"]]
     )
-    naics_category: Optional[list[str]] = Field(
+    naics_category: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects by their company's NAICS classification code (e.g., '541512' for software services).",
         examples=[["541512"]]
     )
-    linkedin_category: Optional[list[str]] = Field(
+    linkedin_category: Optional[List[str]] = Field(
         default=None,
         description="Filter prospects by their company's LinkedIn industry category (e.g., 'retail').",
         examples=[["retail"]]
