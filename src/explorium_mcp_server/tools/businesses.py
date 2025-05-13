@@ -109,7 +109,7 @@ def autocomplete(
     Autocomplete values for business filters based on a query.
     Never use for fields not explicitly listed (e.g., `website_keywords`).
     Prefer `linkedin_category` over `google_category` when both apply.
-    ⚡ Always call autocomplete requests in **parallel**, not sequentially.
+    Always call autocomplete requests in **parallel**, not sequentially.
 
     Hints:
     - Searching for SaaS? Use the keyword 'software'
