@@ -1,12 +1,20 @@
 import logging
 import os
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any, Dict
 
 import backoff
 import requests
 from fastmcp import FastMCP
 from pydantic import BaseModel
+
+from explorium_mcp_server.storage import (
+    generate_session_id,
+    store_session_data,
+    load_session_data,
+    list_session_keys,
+    delete_session_data
+)
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +28,7 @@ if not EXPLORIUM_API_KEY:
         "Please set it to your Explorium API key."
     )
 
-mcp = FastMCP("Explorium", dependencies=["requests", "pydantic", "dotenv"])
+mcp = FastMCP("Explorium", dependencies=["requests", "pydantic", "dotenv", "duckdb"])
 
 
 def make_api_request(
@@ -31,7 +39,9 @@ def make_api_request(
         max_retries=2,
         backoff_factor=0.3,
         method: str = "POST",
-        params: Optional[dict] = None
+        params: Optional[dict] = None,
+        session_id: Optional[str] = None,
+        session_key: Optional[str] = None
 ):
     """
     Makes an API request to the specified endpoint with retries on certain failures.
@@ -44,6 +54,8 @@ def make_api_request(
     :param backoff_factor: Exponential backoff factor.
     :param method: HTTP method to use ('GET', 'POST', 'PUT', 'DELETE', etc.).
     :param params: Query parameters for GET or other requests.
+    :param session_id: Optional session ID for storing results
+    :param session_key: Optional key to store results under in the session
     :return: Parsed JSON response or error info.
     """
     if headers is None:
@@ -80,7 +92,13 @@ def make_api_request(
     try:
         response = do_request()
         response.raise_for_status()  # Raise an error for non-2xx responses
-        return response.json()
+        result = response.json()
+        
+        # Store result in session storage if session_id and session_key are provided
+        if session_id and session_key:
+            store_session_data(session_id, session_key, result)
+            
+        return result
     except requests.RequestException as e:
         logger.warning(f"Failed to send {method.upper()} request to {full_url}: {e}")
         return {
@@ -163,3 +181,28 @@ def pydantic_model_to_serializable(
     except Exception as e:
         logger.error(f"Error in pydantic_model_to_serializable: {e}")
         raise ValueError("Failed to convert Pydantic model to serializable format") from e
+
+
+def create_session() -> str:
+    """Create a new session and return its ID."""
+    return generate_session_id()
+
+
+def get_session_data(session_id: str, key: str) -> Any:
+    """Get data from a session."""
+    return load_session_data(session_id, key)
+
+
+def save_session_data(session_id: str, key: str, data: Any) -> None:
+    """Save data to a session."""
+    store_session_data(session_id, key, data)
+
+
+def get_session_keys(session_id: str) -> list:
+    """Get all keys in a session."""
+    return list_session_keys(session_id)
+
+
+def clear_session(session_id: str, key: Optional[str] = None) -> None:
+    """Clear a session or a specific key in a session."""
+    delete_session_data(session_id, key)
