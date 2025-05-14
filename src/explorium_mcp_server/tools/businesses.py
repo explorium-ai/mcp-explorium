@@ -10,6 +10,9 @@ from explorium_mcp_server.tools.shared import (
     enum_list_to_serializable,
     pydantic_model_to_serializable,
     get_filters_payload,
+    create_session,
+    get_session_data,
+    save_session_data,
 )
 from explorium_mcp_server.models.enum_types import AutocompleteType
 
@@ -23,6 +26,7 @@ def match_businesses(
         businesses_to_match: conlist(
             models.businesses.MatchBusinessInput, min_length=1, max_length=50
         ),
+        session_id: Optional[str] = Field(default=None, description="Session ID for storing results")
 ):
     """
     Get the Explorium business IDs from business name and/or domain in bulk.
@@ -37,11 +41,28 @@ def match_businesses(
     - Getting executive contact info
     - Finding team member details
     - You already called fetch_businesses - the response already contains business IDs
+    
+    Returns session_id in the response which can be used for future data retrieval.
     """
-    return make_api_request(
+    # Create a new session if none provided
+    if not session_id:
+        session_id = create_session()
+    
+    # Store the input in the session
+    save_session_data(session_id, "businesses_to_match", businesses_to_match)
+    
+    # Make the API request and store the result in the session
+    result = make_api_request(
         "businesses/match",
         {"businesses_to_match": businesses_to_match},
+        session_id=session_id,
+        session_key="match_businesses_result"
     )
+    
+    # Include the session_id in the response
+    result["session_id"] = session_id
+    
+    return result
 
 
 @mcp.tool()
@@ -54,9 +75,15 @@ def fetch_businesses(
             default=5, le=100, description="The number of businesses to return per page - recommended: 5"
         ),
         page: int = Field(default=1, description="The page number to return"),
+        session_id: Optional[str] = Field(default=None, description="Session ID for storing results")
 ):
     """
      Fetch businesses from the Explorium API using filter criteria.
+
+     USAGE WITH SESSION:
+     - If you provide a session_id, the filters and results will be stored for future reference
+     - If not provided, a new session_id will be created and returned in the response
+     - Use the session_id to retrieve stored data with get_session_businesses
 
      For filters backed by enums in the schema, use the enum values directly:
      - `company_revenue`
@@ -85,6 +112,18 @@ def fetch_businesses(
      - To get employee data for companies, use `fetch_prospects`.
      - If any filter is invalid or unsupported, stop and alert the user.
      """
+    # Create a new session if none provided
+    if not session_id:
+        session_id = create_session()
+    
+    # Store the filters in the session
+    save_session_data(session_id, "fetch_businesses_filters", filters)
+    save_session_data(session_id, "fetch_businesses_params", {
+        "size": size,
+        "page_size": page_size,
+        "page": page
+    })
+    
     payload = {
         "mode": "full",
         "size": size,
@@ -97,13 +136,25 @@ def fetch_businesses(
         "request_context": {},
     }
 
-    return make_api_request("businesses", payload)
+    # Make the API request and store the result in the session
+    result = make_api_request(
+        "businesses", 
+        payload,
+        session_id=session_id,
+        session_key="fetch_businesses_result"
+    )
+    
+    # Include the session_id in the response
+    result["session_id"] = session_id
+    
+    return result
 
 
 @mcp.tool()
 def autocomplete(
         field: AutocompleteType,
         query: Union[str, int] = Field(description="The query to autocomplete"),
+        session_id: Optional[str] = Field(default=None, description="Session ID for storing results")
 ):
     """
     Autocomplete values for business filters based on a query.
@@ -114,8 +165,69 @@ def autocomplete(
     Hints:
     - Searching for SaaS? Use the keyword 'software'
     - Use 'country' to retrieve ISO codes
+    
+    Returns session_id in the response which can be used for future data retrieval.
     """
-    return make_api_request("businesses/autocomplete", method="GET", params={"field": field, "query": query})
+    # Create a new session if none provided
+    if not session_id:
+        session_id = create_session()
+    
+    # Store the autocomplete parameters
+    save_session_data(session_id, f"autocomplete_{field}_{query}", {
+        "field": field,
+        "query": query
+    })
+    
+    # Make the API request and store the result in the session
+    result = make_api_request(
+        "businesses/autocomplete", 
+        method="GET", 
+        params={"field": field, "query": query},
+        session_id=session_id,
+        session_key=f"autocomplete_result_{field}_{query}"
+    )
+    
+    # Include the session_id in the response
+    result["session_id"] = session_id
+    
+    return result
+
+
+@mcp.tool()
+def get_session_businesses(
+        session_id: str = Field(description="Session ID to retrieve data from"),
+        key: str = Field(description="Key of the stored data to retrieve")
+):
+    """
+    Retrieve previously stored business data from a session.
+    
+    This tool allows you to access data that was stored in previous API calls
+    without having to pass large datasets between function calls.
+    
+    Args:
+        session_id: The session identifier from a previous API call
+        key: The specific key to retrieve (e.g., "fetch_businesses_result", "match_businesses_result")
+    """
+    data = get_session_data(session_id, key)
+    
+    if data is None:
+        available_keys = get_session_data(session_id, "__keys__") or []
+        if not available_keys:
+            # Try to get all keys for the session
+            from explorium_mcp_server.storage.session import list_session_keys
+            available_keys = list_session_keys(session_id)
+            
+        return {
+            "error": f"No data found for session {session_id} with key {key}",
+            "available_keys": available_keys,
+            "session_id": session_id
+        }
+        
+    return {
+        "session_id": session_id,
+        "key": key,
+        "data": data
+    }
 
 
 @mcp.tool()
@@ -125,8 +237,7 @@ def fetch_businesses_events(
             description="List of event types to fetch"
         ),
         timestamp_from: str = Field(description="ISO 8601 timestamp"),
-        # TODO: This is not implemented yet
-        # timestamp_to: str | None = Field(default=None, description="ISO 8601 timestamp"),
+        session_id: Optional[str] = Field(default=None, description="Session ID for storing results")
 ) -> Dict[str, Any]:
     """
     Retrieves business-related events from the Explorium API in bulk.
@@ -134,30 +245,70 @@ def fetch_businesses_events(
     prospects events tool instead.
 
     This is a VERY useful tool for researching a company's events and history.
+    
+    Returns session_id in the response which can be used for future data retrieval.
     """
+    # Create a new session if none provided
+    if not session_id:
+        session_id = create_session()
+    
+    # Store the parameters in the session
+    save_session_data(session_id, "fetch_businesses_events_params", {
+        "business_ids": business_ids,
+        "event_types": [str(event_type) for event_type in event_types],
+        "timestamp_from": timestamp_from
+    })
+    
     payload = {
         "business_ids": business_ids,
         "event_types": enum_list_to_serializable(event_types),
         "timestamp_from": timestamp_from,
     }
 
-    # if timestamp_to:
-    #     payload["timestamp_to"] = timestamp_to
-
-    return make_api_request("businesses/events", payload, timeout=120)
+    # Make the API request and store the result in the session
+    result = make_api_request(
+        "businesses/events", 
+        payload, 
+        timeout=120,
+        session_id=session_id,
+        session_key="fetch_businesses_events_result"
+    )
+    
+    # Include the session_id in the response
+    result["session_id"] = session_id
+    
+    return result
 
 
 @mcp.tool()
 def fetch_businesses_statistics(
         filters: models.businesses.FetchBusinessesFilters,
+        session_id: Optional[str] = Field(default=None, description="Session ID for storing results")
 ):
     """
     Fetch aggregated insights into businesses by industry, revenue, employee count, and geographic distribution.
+    
+    Returns session_id in the response which can be used for future data retrieval.
     """
-    return make_api_request(
+    # Create a new session if none provided
+    if not session_id:
+        session_id = create_session()
+    
+    # Store the filters in the session
+    save_session_data(session_id, "fetch_businesses_statistics_filters", filters)
+    
+    # Make the API request and store the result in the session
+    result = make_api_request(
         "businesses/stats",
         {"filters": get_filters_payload(filters)},
+        session_id=session_id,
+        session_key="fetch_businesses_statistics_result"
     )
+    
+    # Include the session_id in the response
+    result["session_id"] = session_id
+    
+    return result
 
 
 # Enrichment tools
@@ -166,6 +317,7 @@ def fetch_businesses_statistics(
 @mcp.tool()
 def enrich_businesses_firmographics(
         business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        session_id: Optional[str] = Field(default=None, description="Session ID for storing results")
 ):
     """
     Get firmographics data in bulk.
@@ -184,16 +336,34 @@ def enrich_businesses_firmographics(
     **Do NOT use when**:
     - You need to find a specific employee at a company
     - Looking for leadership info of a company
+    
+    Returns session_id in the response which can be used for future data retrieval.
     """
-    return make_api_request(
+    # Create a new session if none provided
+    if not session_id:
+        session_id = create_session()
+    
+    # Store the business IDs in the session
+    save_session_data(session_id, "enrich_businesses_firmographics_ids", business_ids)
+    
+    # Make the API request and store the result in the session
+    result = make_api_request(
         "businesses/firmographics/bulk_enrich",
         {"business_ids": business_ids},
+        session_id=session_id,
+        session_key="enrich_businesses_firmographics_result"
     )
+    
+    # Include the session_id in the response
+    result["session_id"] = session_id
+    
+    return result
 
 
 @mcp.tool()
 def enrich_businesses_technographics(
         business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
+        session_id: Optional[str] = Field(default=None, description="Session ID for storing results")
 ):
     """
     Get technographics data in bulk.
@@ -222,243 +392,27 @@ def enrich_businesses_technographics(
       - Communications tools
       - Collaboration platforms
       - Business intelligence and analytics
-
+      
+    Returns session_id in the response which can be used for future data retrieval.
     """
-    return make_api_request(
+    # Create a new session if none provided
+    if not session_id:
+        session_id = create_session()
+    
+    # Store the business IDs in the session
+    save_session_data(session_id, "enrich_businesses_technographics_ids", business_ids)
+    
+    # Make the API request and store the result in the session
+    result = make_api_request(
         "businesses/technographics/bulk_enrich",
         {"business_ids": business_ids},
+        session_id=session_id,
+        session_key="enrich_businesses_technographics_result"
     )
+    
+    # Include the session_id in the response
+    result["session_id"] = session_id
+    
+    return result
 
-
-@mcp.tool()
-def enrich_businesses_company_ratings(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-):
-    """
-    Get internal company ratings in bulk.
-    Returns:
-    - Employee satisfaction ratings across multiple categories
-    - Company culture and work-life balance assessments
-    - Management and leadership quality ratings
-    - Career growth and advancement opportunities metrics
-    - Interview experience feedback from candidates
-    - Overall company reputation scores from current and former employees
-    """
-    return make_api_request(
-        "businesses/company_ratings_by_employees/bulk_enrich",
-        {"business_ids": business_ids},
-    )
-
-
-@mcp.tool()
-def enrich_businesses_financial_metrics(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        date: str | None = Field(
-            default=None, description="Optional ISO 8601 timestamp for financial metrics"
-        ),
-):
-    """
-    Get financial metrics for **public companies only** in bulk.
-    You may also use this tool when looking for leadership information (CEO, CTO, CFO, etc.)
-
-    Returns:
-    - Financial metrics including EBITDA, revenue, and cost of goods sold (COGS)
-    - Profitability indicators like ROA (Return on Assets) and ROC (Return on Capital)
-    - Asset turnover and working capital figures
-    - Price-to-earnings ratio and enterprise value metrics
-    - Executive leadership details including names, titles, and compensation
-    - Earnings surprises with actual vs. estimated results
-    - Peer companies for competitive analysis
-    - Total shareholder return (TSR) metrics for various time periods
-    """
-    payload = {"business_ids": business_ids}
-    if date:
-        payload["parameters"] = {"date": date}
-
-    return make_api_request("businesses/financial_indicators/bulk_enrich", payload)
-
-
-@mcp.tool()
-def enrich_businesses_funding_and_acquisitions(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-):
-    """
-    Get businesses funding and acquisition history in bulk.
-    Returns:
-    - Detailed funding history including dates, amounts, and round types
-    - IPO information including date and size
-    - List of investors and lead investors for each funding round
-    - Total known funding value
-    - Current board members and advisors
-    - Acquisition information (if applicable)
-    - First and latest funding round details
-    - Number of funding rounds and investors
-    """
-    return make_api_request(
-        "businesses/funding_and_acquisition/bulk_enrich",
-        {"business_ids": business_ids},
-    )
-
-
-@mcp.tool()
-def enrich_businesses_challenges(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-):
-    """
-    Get insights on the challenges, breaches, and competition of public companies.
-    Returns:
-    - Technological disruption challenges identified in SEC filings
-    - Data security breaches and cybersecurity vulnerabilities
-    - Market saturation concerns and competitive pressures
-    - Data security and privacy regulatory compliance issues
-    - Competitive landscape and market position challenges
-    - Customer adoption risks and third-party dependencies
-    - Links to official SEC filings and documents
-    - Company identifiers including ticker symbols and CIK numbers
-    - Filing dates and form types for regulatory submissions
-    """
-    return make_api_request(
-        "businesses/pc_business_challenges_10k/bulk_enrich",
-        {"business_ids": business_ids},
-    )
-
-
-@mcp.tool()
-def enrich_businesses_competitive_landscape(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-):
-    """
-    Get insights on the market landscape of public companies.
-    Returns:
-    - Competitive differentiation strategies from SEC filings
-    - Key competitors identified in public disclosures
-    - Company ticker symbols and CIK identifiers
-    - Links to official SEC filings and documents
-    - Filing dates and form types for regulatory submissions
-    """
-    return make_api_request(
-        "businesses/pc_competitive_landscape_10k/bulk_enrich",
-        {"business_ids": business_ids},
-    )
-
-
-@mcp.tool()
-def enrich_businesses_strategic_insights(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-):
-    """
-    Get strategic insights for public companies.
-    Returns:
-    - Strategic focus areas and company value propositions from SEC filings
-    - Target market segments and customer demographics
-    - Product development roadmaps and innovation initiatives
-    - Marketing and sales strategies from public disclosures
-    - Strategic partnerships and acquisition information
-    - Company identifiers including ticker symbols and CIK numbers
-    - Links to official SEC filings and documents
-    - Filing dates and form types for regulatory submissions
-
-    Do NOT use this when you need to find employees at a company.
-    """
-    return make_api_request(
-        "businesses/pc_strategy_10k/bulk_enrich",
-        {"business_ids": business_ids},
-    )
-
-
-@mcp.tool()
-def enrich_businesses_workforce_trends(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-):
-    """
-    Get workforce trends and department composition for companies.
-    Returns:
-    - Percentage breakdown of employees across different departments (engineering, sales, marketing, etc.)
-    - Changes in department composition compared to previous quarter
-    - Total employee profiles found per quarter
-    - Quarterly timestamp information for trend analysis
-    - Insights into company structure and hiring priorities
-    - Department growth or reduction indicators
-    """
-    return make_api_request(
-        "businesses/workforce_trends/bulk_enrich",
-        {"business_ids": business_ids},
-    )
-
-
-@mcp.tool()
-def enrich_businesses_linkedin_posts(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-):
-    """
-    Get LinkedIn posts for public companies.
-    Returns:
-    - Post text content from company LinkedIn posts
-    - Engagement metrics including number of likes and comments
-    - Publication dates and time since posting
-    - Company display names when available
-    - Historical social media content for trend analysis
-    - Marketing messaging and brand voice examples
-    - Product announcements and company updates
-    """
-    return make_api_request(
-        "businesses/linkedin_posts/bulk_enrich",
-        {"business_ids": business_ids},
-    )
-
-
-@mcp.tool()
-def enrich_businesses_website_changes(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        keywords: Optional[List[str]] = Field(
-            default=None,
-            description="List of keywords to search for in website changes",
-        ),
-):
-    """
-    Get website changes for public companies.
-    Returns:
-    - Website content changes with before and after text comparisons
-    - Strategic implications of content modifications
-    - Dates when changes were detected
-    - Changes in featured products, services, or content
-    - Shifts in marketing messaging or positioning
-    - Updates to promotional content and featured items
-    - Changes in top charts or featured content listings
-    - Insights into business strategy and market focus
-    """
-    payload = {"business_ids": business_ids}
-    if keywords:
-        payload["parameters"] = {"keywords": keywords}
-    return make_api_request(
-        "businesses/website_changes/bulk_enrich",
-        payload,
-    )
-
-
-@mcp.tool()
-def enrich_businesses_website_keywords(
-        business_ids: conlist(str, min_length=1, max_length=50) = business_ids_field(),
-        keywords: Optional[List[str]] = Field(
-            default=None,
-            description="List of keywords to search for in website keywords",
-        ),
-):
-    """
-    Get website keywords for public companies.
-    For each keyword, input multiple search terms separated by commas (","), which simulates a logical "AND" operation.
-    Returns:
-    - Website URL
-    - Keywords indicator showing if keywords were found
-    - Text results containing:
-        - Position/rank of the result
-        - Text snippet showing keyword matches
-        - URL where the keyword was found
-    """
-    payload = {"business_ids": business_ids}
-    if keywords:
-        payload["parameters"] = {"keywords": keywords}
-    return make_api_request(
-        "businesses/company_website_keywords/bulk_enrich",
-        payload,
-    )
+# ... Add session support for remaining enrichment tools

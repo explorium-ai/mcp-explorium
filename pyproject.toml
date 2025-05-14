@@ -14,6 +14,7 @@ dependencies = [
     "backoff>=2.2.1",
     "dotenv>=0.9.9",
     "fastmcp>=2.3.3",
+    "duckdb>=0.9.0",
 ]
 
 [project.scripts]
