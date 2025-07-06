@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/explorium-ai-mcp-explorium-badge.png)](https://mseep.ai/app/explorium-ai-mcp-explorium)
+
 # Explorium API MCP Server
 
 [![mcp-explorerium-ci](https://github.com/explorium-ai/mcp-explorium/actions/workflows/ci.yml/badge.svg)](https://github.com/explorium-ai/mcp-explorium/actions/workflows/ci.yml)
