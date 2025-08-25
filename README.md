@@ -18,7 +18,370 @@ The **Explorium Business Data Hub** provides AI tools with access to:
 
 Search any company or professional for everything from emails and phone numbers to roles, growth signals, tech stack, business events, website changes, and more. Find qualified leads, research prospects, identify talent, or craft personalized outreach—all without leaving your AI tool.
 
+## Installation
+
+<details>
+<summary><b>Install in Claude Desktop</b></summary>
+
+#### Remote Server Connection
+
+Open Claude Desktop and navigate to Settings > Connectors > Add Custom Connector. Enter the name as `Explorium` and the remote MCP server URL as `https://mcp.explorium.ai/mcp`.
+
+#### Local Server Connection
+
+Open Claude Desktop developer settings and edit your `claude_desktop_config.json` file to add the following configuration. See [Claude Desktop MCP docs](https://modelcontextprotocol.io/quickstart/user) for more info.
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Cursor</b></summary>
+
+Go to: `Settings` -> `Cursor Settings` -> `MCP` -> `Add new global MCP server`
+
+Pasting the following configuration into your Cursor `~/.cursor/mcp.json` file is the recommended approach. You may also install in a specific project by creating `.cursor/mcp.json` in your project folder. See [Cursor MCP docs](https://docs.cursor.com/context/model-context-protocol) for more info.
+
+#### Cursor Remote Server Connection
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "url": "https://mcp.explorium.ai/mcp"
+    }
+  }
+}
+```
+
+#### Cursor Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Windsurf</b></summary>
+
+Add this to your Windsurf MCP config file. See [Windsurf MCP docs](https://docs.windsurf.com/windsurf/cascade/mcp) for more info.
+
+#### Windsurf Remote Server Connection
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "serverUrl": "https://mcp.explorium.ai/mcp"
+    }
+  }
+}
+```
+
+#### Windsurf Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in VS Code</b></summary>
+
+Add this to your VS Code MCP config file. See [VS Code MCP docs](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) for more info.
+
+#### VS Code Remote Server Connection
+
+```json
+"mcp": {
+  "servers": {
+    "explorium": {
+      "type": "http",
+      "url": "https://mcp.explorium.ai/mcp"
+    }
+  }
+}
+```
+
+#### VS Code Local Server Connection
+
+```json
+"mcp": {
+  "servers": {
+    "explorium": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Zed</b></summary>
+
+It can be installed via [Zed Extensions](https://zed.dev/extensions?query=Explorium) or you can add this to your Zed `settings.json`. See [Zed Context Server docs](https://zed.dev/docs/assistant/context-servers) for more info.
+
+```json
+{
+  "context_servers": {
+    "Explorium": {
+      "command": {
+        "path": "npx",
+        "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+      },
+      "settings": {}
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Cline</b></summary>
+
+You can easily install Explorium through the [Cline MCP Server Marketplace](https://cline.bot/mcp-marketplace) by following these instructions:
+
+1. Open **Cline**.
+2. Click the hamburger menu icon (☰) to enter the **MCP Servers** section.
+3. Use the search bar within the **Marketplace** tab to find _Explorium_.
+4. Click the **Install** button.
+
+</details>
+
+
+
+<details>
+<summary><b>Install in Roo Code</b></summary>
+
+Add this to your Roo Code MCP configuration file. See [Roo Code MCP docs](https://docs.roocode.com/features/mcp/using-mcp-in-roo) for more info.
+
+#### Roo Code Remote Server Connection
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "type": "streamable-http",
+      "url": "https://mcp.explorium.ai/mcp"
+    }
+  }
+}
+```
+
+#### Roo Code Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Gemini CLI</b></summary>
+
+See [Gemini CLI Configuration](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html) for details.
+
+1. Open the Gemini CLI settings file. The location is `~/.gemini/settings.json` (where `~` is your home directory).
+2. Add the following to the `mcpServers` object in your `settings.json` file:
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "httpUrl": "https://mcp.explorium.ai/mcp"
+    }
+  }
+}
+```
+
+Or, for a local server:
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
+
+If the `mcpServers` object does not exist, create it.
+
+</details>
+
+
+
+<details>
+<summary><b>Install in JetBrains AI Assistant</b></summary>
+
+See [JetBrains AI Assistant Documentation](https://www.jetbrains.com/help/ai-assistant/configure-an-mcp-server.html) for more details.
+
+1. In JetBrains IDEs go to `Settings` -> `Tools` -> `AI Assistant` -> `Model Context Protocol (MCP)`
+2. Click `+ Add`.
+3. Click on `Command` in the top-left corner of the dialog and select the As JSON option from the list
+4. Add this configuration and click `OK`
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
+
+5. Click `Apply` to save changes.
+6. The same way explorium could be added for JetBrains Junie in `Settings` -> `Tools` -> `Junie` -> `MCP Settings`
+
+</details>
+
+<details>
+<summary><b>Install in Kiro</b></summary>
+
+See [Kiro Model Context Protocol Documentation](https://kiro.dev/docs/mcp/configuration/) for details.
+
+1. Navigate `Kiro` > `MCP Servers`
+2. Add a new MCP server by clicking the `+ Add` button.
+3. Paste the configuration given below:
+
+```json
+{
+  "mcpServers": {
+    "Explorium": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"],
+      "env": {},
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+4. Click `Save` to apply the changes.
+
+</details>
+
+
+
+To configure Explorium MCP in Augment Code, you can use either the graphical interface or manual configuration.
+
+#### A. Using the Augment Code UI
+
+1. Click the hamburger menu
+2. Select **Settings**
+3. Navigate to the **Tools** section
+4. Click the **+ Add MCP** button
+5. Enter the following command:
+   ```
+   npx -y mcp-remote https://mcp.explorium.ai/mcp
+   ```
+6. Name the MCP: **Explorium**
+7. Click the **Add** button
+
+#### B. Manual Configuration
+
+1. Press Cmd/Ctrl Shift P or go to the hamburger menu in the Augment panel
+2. Select Edit Settings
+3. Under Advanced, click Edit in settings.json
+4. Add the server configuration to the `mcpServers` array:
+
+```json
+"augment.advanced": {
+  "mcpServers": [
+    {
+      "name": "explorium",
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary><b>Using Bun or Deno</b></summary>
+
+Use these alternatives to run the Explorium MCP server with other runtimes:
+
+#### Bun
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "bunx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
+
+#### Deno
+
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "deno",
+      "args": [
+        "run",
+        "--allow-env=NO_DEPRECATION,TRACE_DEPRECATION",
+        "--allow-net",
+        "npm:mcp-remote",
+        "https://mcp.explorium.ai/mcp"
+      ]
+    }
+  }
+}
+```
+
+</details>
+
 ## Connecting to Explorium MCP
+
+For advanced users or other MCP clients, you can connect using these methods:
 
 You can connect your AI tool to Explorium using the Model Context Protocol (MCP) through several methods:
 
