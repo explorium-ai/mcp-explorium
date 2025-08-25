@@ -1,6 +1,6 @@
 # Explorium Business Data Hub
 
-<img src="logo.png" alt="Explorium Logo" width="200">
+<img src="logo.png" alt="Explorium Logo" width="180">
 
 **Discover companies, contacts, and business insights—powered by dozens of trusted external data sources.**
 
