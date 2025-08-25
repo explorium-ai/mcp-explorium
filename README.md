@@ -85,7 +85,7 @@ This repository includes Docker configuration for self-hosting:
 docker build -t explorium-mcp .
 
 # Run the container with API access token
-docker run -p 44280:44280 -e API_ACCESS_TOKEN=your_explorium_access_token explorium-mcp
+docker run -e API_ACCESS_TOKEN=your_explorium_access_token explorium-mcp
 ```
 
 **Required Environment Variables:**
