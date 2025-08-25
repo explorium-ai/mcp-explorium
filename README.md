@@ -1,233 +1,158 @@
-# Explorium API MCP Server
+# Explorium Business Data Hub
 
-[![mcp-explorerium-ci](https://github.com/explorium-ai/mcp-explorium/actions/workflows/ci.yml/badge.svg)](https://github.com/explorium-ai/mcp-explorium/actions/workflows/ci.yml)
-[![PyPI version](https://badge.fury.io/py/explorium-mcp-server.svg)](https://badge.fury.io/py/explorium-mcp-server)
-[![Python Versions](https://img.shields.io/pypi/pyversions/explorium-mcp-server.svg)](https://pypi.org/project/explorium-mcp-server/)
+<img src="logo.png" alt="Explorium Logo" width="200">
 
-The Explorium MCP Server is a [Model Context Protocol](https://modelcontextprotocol.io/introduction) server used to
-interact with the [Explorium API](https://developers.explorium.ai/reference/overview). It enables AI assistants to
-access Explorium's business and prospect data lookup capabilities.
+**Discover companies, contacts, and business insights—powered by dozens of trusted external data sources.**
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Installation](#installation)
-- [Setup for Development](#setup-for-development)
-- [Running Locally](#running-locally)
-- [Usage with AI Assistants](#usage-with-ai-assistants)
-    - [Claude Desktop](#usage-with-claude-desktop)
-    - [Cursor](#usage-with-cursor)
-- [Project Structure](#project-structure)
-- [Development Workflow](#development-workflow)
-- [Continuous Integration](#continuous-integration)
-- [Building and Publishing](#building-and-publishing)
-- [License](#license)
+This repository contains the configuration and setup files for connecting to Explorium's Model Context Protocol (MCP) server, enabling AI tools to access comprehensive business intelligence data.
 
 ## Overview
 
-The Explorium MCP Server allows AI assistants to access the extensive business and prospects databases from Explorium.
-This enables AI tools to provide accurate, up-to-date information about companies, industries, and professionals
-directly in chat interfaces.
+The **Explorium Business Data Hub** provides AI tools with access to:
 
-## Installation
+- **Company Search & Enrichment**: Find companies by name, domain, or attributes with detailed firmographics
+- **Contact Discovery**: Locate and enrich professional contact information  
+- **Business Intelligence**: Access technology stack, funding history, growth signals, and business events
+- **Real-Time Data**: Up-to-date information from dozens of trusted external data sources
+- **Workflow Integration**: Seamlessly integrate business data into AI-powered workflows
 
-Install the Explorium MCP Server from PyPI:
+Search any company or professional for everything from emails and phone numbers to roles, growth signals, tech stack, business events, website changes, and more. Find qualified leads, research prospects, identify talent, or craft personalized outreach—all without leaving your AI tool.
 
-```bash
-pip install explorium-mcp-server
-```
+## Connecting to Explorium MCP
 
-The package requires Python 3.10 or later.
+You can connect your AI tool to Explorium using the Model Context Protocol (MCP) through several methods:
 
-## Setup for Development
+### Streamable HTTP (Recommended)
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/explorium-ai/mcp-explorium.git
-cd mcp-explorium
-```
-
-2. Set up the development environment using `uv`:
-
-```bash
-# Install uv if you don't have it
-pip install uv
-
-# Create and activate the virtual environment with all development dependencies
-uv sync --group dev
-```
-
-3. Create a `.env` file in the root directory with your Explorium API key:
-
-```
-EXPLORIUM_API_KEY=your_api_key_here
-```
-
-To obtain an API key, follow the instructions in
-the [Explorium API documentation](https://developers.explorium.ai/reference/getting_your_api_key).
-
-## Running Locally
-
-```bash
-mcp dev local_dev_server.py
-```
-
-## Usage with AI Assistants
-
-### Usage with Claude Desktop
-
-1. Follow the [official Model Context Protocol guide](https://modelcontextprotocol.io/quickstart/user) to install Claude
-   Desktop and set it up to use MCP servers.
-
-2. Add this entry to your `claude_desktop_config.json` file:
-
+- **URL**: `https://mcp.explorium.ai/mcp`
+- **JSON config**:
 ```json
 {
   "mcpServers": {
     "Explorium": {
-      "command": "<PATH_TO_UVX>",
-      "args": [
-        "explorium-mcp-server"
-      ],
-      "env": {
-        "EXPLORIUM_API_KEY": "<YOUR_API_KEY>"
-      }
+      "url": "https://mcp.explorium.ai/mcp"
     }
   }
 }
 ```
 
-For development, you can use this configuration instead:
+### SSE (Server-Sent Events)
 
+- **URL**: `https://mcp.explorium.ai/sse`
+- **JSON config**:
 ```json
 {
   "mcpServers": {
     "Explorium": {
-      "command": "<UV_INSTALL_PATH>",
-      "args": [
-        "run",
-        "--directory",
-        "<REPOSITORY_PATH>",
-        "mcp",
-        "run",
-        "local_dev_server.py"
-      ],
-      "env": {
-        "EXPLORIUM_API_KEY": "<YOUR_API_KEY>"
-      }
+      "url": "https://mcp.explorium.ai/sse"
     }
   }
 }
 ```
 
-Replace all placeholders with your actual paths and API key.
+### STDIO (Local Server)
 
-### Usage with Cursor
+- **JSON config**:
+```json
+{
+  "mcpServers": {
+    "explorium": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
+    }
+  }
+}
+```
 
-Cursor has [built-in support for MCP servers](https://docs.cursor.com/context/model-context-protocol).
+## API Key Requirements
 
-To configure it to use the Explorium MCP server:
+**Important**: Different connection methods have different authentication requirements:
 
-1. Go to `Cursor > Settings > Cursor Settings > MCP`
-2. Add an "Explorium" entry with this command:
+- ✅ **Claude Desktop Extension** - No API key required
+- ✅ **MCP Remote Connections** (Streamable HTTP/SSE/STDIO) - No API key required  
+- 🔑 **Docker Self-Hosting** - Requires API key
 
-For development, use:
+### Getting Your API Key
+
+For Docker deployment, you'll need an API access token. Get yours at: [https://admin.explorium.ai/api-key](https://admin.explorium.ai/api-key)
+
+## Docker Deployment
+
+This repository includes Docker configuration for self-hosting:
 
 ```bash
-uv run --directory <repo_path> mcp run local_dev_server.py
+# Build the Docker image
+docker build -t explorium-mcp .
+
+# Run the container with API access token
+docker run -p 44280:44280 -e API_ACCESS_TOKEN=your_explorium_access_token explorium-mcp
 ```
 
-You may turn on "Yolo mode" in Cursor settings to use tools without confirming under
-`Cursor > Settings > Cursor Settings > Features > Chat > Enable Yolo mode`.
+**Required Environment Variables:**
+- `API_ACCESS_TOKEN` - Your Explorium API access token for authentication (get it [here](https://admin.explorium.ai/api-key))
 
-## Project Structure
+You can also use a `.env` file or docker-compose for easier management:
 
-```
-mcp-explorium/
-├── .github/workflows/        # CI/CD configuration
-│   └── ci.yml               # Main CI workflow
-├── src/                      # Source code
-│   └── explorium_mcp_server/
-│       ├── __init__.py      # Package initialization
-│       ├── __main__.py      # Entry point for direct execution
-│       ├── models/          # Data models and schemas
-│       └── tools/           # MCP tools implementation
-├── tests/                    # Test suite
-├── .env                      # Local environment variables (not in repo)
-├── local_dev_server.py       # Development server script
-├── Makefile                  # Development shortcuts
-├── pyproject.toml           # Project metadata and dependencies
-└── README.md                # Project documentation
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  explorium-mcp:
+    build: .
+    ports:
+      - "44280:44280"
+    environment:
+      - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
 ```
 
-## Development Workflow
+## Available Tools
 
-1. Set up the environment as described in [Setup for Development](#setup-for-development)
-2. Make your changes to the codebase
-3. Format your code:
+Once connected, your AI tool will have access to tools for:
 
-```bash
-make format
-```
+- **Business Matching**: Find companies by name, domain, or business ID
+- **Business Enrichment**: Get detailed firmographics, technographics, and business intelligence
+- **Prospect Discovery**: Search for professionals and contacts within companies
+- **Prospect Enrichment**: Access contact information, work history, and professional profiles
+- **Business Events**: Track funding rounds, office changes, hiring trends, and company developments
+- **Technology Intelligence**: Discover what technologies companies use in their stack
 
-4. Run linting checks:
+## Troubleshooting Connection Issues
 
-```bash
-make lint
-```
+If you're experiencing issues connecting your AI tool to Explorium MCP:
 
-5. Run tests:
+1. **Check MCP Client Support**  
+   Verify that your AI tool supports MCP clients and can connect to MCP servers. Not all AI tools have this capability built-in yet.
 
-```bash
-make test
-```
+2. **Verify Remote Server Support**  
+   Some AI tools have MCP clients but don't support remote connections. If this is the case, you may still be able to connect using our Docker configuration or local server setup.
 
-## Continuous Integration
+3. **Request MCP Support**  
+   If your AI tool doesn't support MCP at all, we recommend reaching out to the tool's developers to request MCP server connection support.
 
-The project uses GitHub Actions for CI/CD. The workflow defined in `.github/workflows/ci.yml` does the following:
+## Configuration Files
 
-1. **Version Check**: Ensures the version in `pyproject.toml` is incremented before merging to main
-2. **Linting**: Runs code style and formatting checks using `ruff`
-3. **Testing**: Runs the test suite with coverage reporting
-4. **Deployment**: Tags the repo with the version from `pyproject.toml` when merged to main
+This repository contains:
 
-## Building and Publishing
+- `package.json` - Node.js dependencies and scripts
+- `manifest.json` - Extension metadata and configuration
+- `Dockerfile` - Container configuration for self-hosting
+- `server/index.js` - Placeholder file (does not contain actual MCP implementation)
+- `entrypoint.sh` - Docker container entry point
 
-### Building the Package
+**Important Note**: The `server/index.js` file in this repository is just a placeholder and does not contain the actual MCP server implementation. To use Explorium MCP, you need to connect to the remote server at `https://mcp.explorium.ai/mcp` using `mcp-remote` or through the connection methods described above. The actual MCP server is hosted by Explorium and accessible via the remote URLs.
 
-To build the package for distribution:
+## Documentation & Support
 
-1. Update the version in `pyproject.toml` (required for every new release)
-2. Run the build command:
+- [API Documentation](https://developers.explorium.ai/reference/agentsource-mcp)
+- [Support & Help Center](https://developers.explorium.ai/reference/support-help-center)
+- [Explorium Homepage](https://www.explorium.ai/mcp/)
 
-```bash
-uv build
-```
+For technical support, contact [support@explorium.ai](mailto:support@explorium.ai).
 
-This creates a `dist/` directory with the built package.
 
-### Publishing to PyPI
 
-To publish the package to PyPI:
+## License
 
-1. Ensure you have `twine` installed:
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-```bash
-uv pip install twine
-```
-
-2. Upload the built package to PyPI:
-
-```bash
-twine upload dist/*
-```
-
-You'll need to provide your PyPI credentials or configure them in a `.pypirc` file.
-
-### Automatic Versioning and Tagging
-
-When changes are merged to the main branch, the CI workflow automatically:
-
-1. Tags the repository with the version from `pyproject.toml`
-2. Pushes the tag to GitHub
+---

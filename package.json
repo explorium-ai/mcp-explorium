@@ -1,0 +1,16 @@
+{
+  "name": "explorium-mcp",
+  "version": "1.1.9",
+  "description": "Explorium MCP",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "express": "^5.1.0",
+    "mcp-remote": "^0.1.0"
+  },
+  "author": "explorium.ai",
+  "license": "MIT"
+}

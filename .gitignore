@@ -65,3 +65,4 @@ Desktop.ini
 # Project specific
 local_settings.py
 .python-version
+node_modules/
