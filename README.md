@@ -111,10 +111,11 @@ Once connected, your AI tool will have access to tools for:
 
 - **Business Matching**: Find companies by name, domain, or business ID
 - **Business Enrichment**: Get detailed firmographics, technographics, and business intelligence
+- **Business Events**: Track funding rounds, office changes, hiring trends, and company developments
 - **Prospect Discovery**: Search for professionals and contacts within companies
 - **Prospect Enrichment**: Access contact information, work history, and professional profiles
-- **Business Events**: Track funding rounds, office changes, hiring trends, and company developments
-- **Technology Intelligence**: Discover what technologies companies use in their stack
+- **Prospect Events**: Track role changes, company moves, and career milestones
+
 
 ## Troubleshooting Connection Issues
 
