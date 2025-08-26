@@ -1,0 +1,17 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - exploriumApiKey
+    properties:
+      exploriumApiKey:
+        type: string
+        description: The API key for the Exploirum MCP server, Get it from https://admin.explorium.ai/api-key.
+  commandFunction:
+    # A function that produces the CLI command to start the MCP on stdio.
+    |-
+    config => ({ command: 'npx', args: ["-y","mcp-remote","https://mcp.explorium.ai/mcp","--header","Authorization: Bearer ${AUTH_TOKEN}"], env: { "AUTH_TOKEN": config.exploriumApiKey } })
