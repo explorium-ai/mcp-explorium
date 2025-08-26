@@ -18,6 +18,8 @@ RUN chmod +x /entrypoint.sh
 
 # Set environment to production
 ENV NODE_ENV=production
+ENV API_ACCESS_TOKEN=your-api-key
+
 EXPOSE 44280
 
 # Use wrapper script as entrypoint
