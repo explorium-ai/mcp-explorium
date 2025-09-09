@@ -1,4 +1,4 @@
-FROM node:22-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
@@ -18,7 +18,6 @@ RUN chmod +x /entrypoint.sh
 
 # Set environment to production
 ENV NODE_ENV=production
-
 EXPOSE 44280
 
 # Use wrapper script as entrypoint
