@@ -1,0 +1,12 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.explorium-ai/mcp-explorium",
+  "description": "Explorium AgentSource MCP Extension for accessing live company and contact data through Explorium's comprehensive B2B data platform.",
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "sse",
+      "url": "https://mcp-github-registry.explorium.ai/sse"
+    }
+  ]
+}
