@@ -1,0 +1,145 @@
+name: Publish to MCP Registry
+
+on:
+  push:
+    tags: ["v*"]  # Auto-publish on version tags
+    branches: ["main"]  # Auto-publish on main branch pushes
+  workflow_dispatch:  # Manual trigger from GitHub UI
+    inputs:
+      force_publish:
+        description: 'Force publish even if no changes'
+        required: false
+        default: false
+        type: boolean
+      custom_message:
+        description: 'Custom publish message'
+        required: false
+        default: 'Manual publication from workflow'
+        type: string
+
+jobs:
+  publish-mcp:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC authentication
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set publishing context
+        id: context
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "trigger=manual" >> $GITHUB_OUTPUT
+            echo "message=${{ github.event.inputs.custom_message }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "trigger=tag" >> $GITHUB_OUTPUT
+            echo "message=Published from tag ${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "trigger=main_branch" >> $GITHUB_OUTPUT
+            echo "message=Published from main branch" >> $GITHUB_OUTPUT
+          else
+            echo "trigger=other" >> $GITHUB_OUTPUT
+            echo "message=Published from ${{ github.ref }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Display publishing info
+        run: |
+          echo "🚀 Publishing MCP Server to Registry"
+          echo "=================================="
+          echo "Trigger: ${{ steps.context.outputs.trigger }}"
+          echo "Branch/Tag: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Message: ${{ steps.context.outputs.message }}"
+          echo "Force publish: ${{ github.event.inputs.force_publish }}"
+
+      - name: Install MCP Publisher
+        run: |
+          echo "📦 Installing MCP Publisher..."
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/download/v1.0.0/mcp-publisher_1.0.0_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+          chmod +x mcp-publisher
+          echo "✅ MCP Publisher installed"
+
+      - name: Login to MCP Registry
+        run: |
+          echo "🔐 Authenticating with MCP Registry..."
+          ./mcp-publisher login github-oidc
+          echo "✅ Authentication successful"
+
+      - name: Validate server.json
+        run: |
+          echo "🔍 Validating server.json..."
+          if [[ ! -f "server.json" ]]; then
+            echo "❌ server.json not found!"
+            exit 1
+          fi
+          
+          # Basic JSON validation
+          if ! jq empty server.json 2>/dev/null; then
+            echo "❌ server.json is not valid JSON!"
+            exit 1
+          fi
+          
+          # Extract and display key info
+          name=$(jq -r '.name' server.json)
+          version=$(jq -r '.version' server.json)
+          description=$(jq -r '.description' server.json)
+          
+          echo "📋 Server Configuration:"
+          echo "   Name: $name"
+          echo "   Version: $version"
+          echo "   Description: $description"
+          echo "   Description length: ${#description} characters"
+          
+          # Check description length
+          if [[ ${#description} -gt 100 ]]; then
+            echo "❌ Description is too long (${#description} > 100 characters)"
+            exit 1
+          fi
+          
+          echo "✅ server.json validation passed"
+
+      - name: Publish to MCP Registry
+        run: |
+          echo "🚀 Publishing to MCP Registry..."
+          ./mcp-publisher publish
+          echo "✅ Successfully published to MCP Registry!"
+
+      - name: Publication Summary
+        run: |
+          echo ""
+          echo "🎉 Publication Complete!"
+          echo "======================="
+          echo "📋 Server: $(jq -r '.name' server.json)"
+          echo "📦 Version: $(jq -r '.version' server.json)"
+          echo "🌐 Remote URL: $(jq -r '.remotes[0].url' server.json)"
+          echo "🔗 Registry: https://registry.modelcontextprotocol.io"
+          echo "📝 Message: ${{ steps.context.outputs.message }}"
+          echo ""
+          echo "Users can now connect to your MCP server!"
+
+      - name: Create deployment comment (for manual triggers)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            if (context.eventName === 'workflow_dispatch') {
+              const name = require('./server.json').name;
+              const version = require('./server.json').version;
+              const url = require('./server.json').remotes[0].url;
+              
+              github.rest.repos.createCommitComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: context.sha,
+                body: `🚀 **MCP Server Published**\n\n` +
+                      `📋 **Name:** \`${name}\`\n` +
+                      `📦 **Version:** \`${version}\`\n` +
+                      `🌐 **Endpoint:** \`${url}\`\n` +
+                      `⚡ **Trigger:** Manual workflow dispatch\n` +
+                      `📝 **Message:** ${{ github.event.inputs.custom_message }}\n\n` +
+                      `✅ Successfully published to MCP Registry!`
+              });
+            }
