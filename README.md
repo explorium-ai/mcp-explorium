@@ -35,7 +35,7 @@ Search any company or professional for everything from emails and phone numbers 
 
 #### Remote Server Connection
 
-Open Claude Desktop and navigate to Settings > Connectors > Add Custom Connector. Enter the name as `Explorium` and the remote MCP server URL as `https://mcp.explorium.ai/mcp`.
+Open Claude Desktop and navigate to Settings > Extensions > Add Custom Extension. Enter the name as `Explorium` and the remote MCP server URL as `https://mcp.explorium.ai/mcp`.
 
 #### Local Server Connection
 
