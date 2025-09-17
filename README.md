@@ -1,6 +1,16 @@
-# Explorium Business Data Hub
+## Explorium Business Data Hub
 
-<img src="logo.png" alt="Explorium Logo" width="180">
+
+<p>
+  <a href="https://github.com/explorium-ai/mcp-explorium/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/Node.js-v24+-green.svg" alt="Node.js Version">
+  <img src="https://img.shields.io/badge/MCP-Compatible-blueviolet" alt="MCP Compatible">
+  <img src="https://img.shields.io/badge/Claude-Ready-orange" alt="Claude Ready">
+  <img src="https://img.shields.io/badge/OpenAI-Compatible-lightgrey" alt="OpenAI Compatible">
+  <img src="https://img.shields.io/badge/TypeScript-Powered-blue" alt="TypeScript">
+</p>
+
+<img src="logo.png" alt="Explorium Logo" width="90"> 
 
 **Discover companies, contacts, and business insights—powered by dozens of trusted external data sources.**
 

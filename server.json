@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
-  "name": "io.github.explorium-ai/mcp-explorium",
+  "name": "ai.explorium/mcp-explorium",
   "description": "Access live company and contact data from Explorium's AgentSource B2B platform.",
   "version": "1.0.0",
   "remotes": [
