@@ -1,9 +1,6 @@
 name: Publish to MCP Registry
 
 on:
-  push:
-    tags: ["v*"]  # Auto-publish on version tags
-    branches: ["main"]  # Auto-publish on main branch pushes
   workflow_dispatch:  # Manual trigger from GitHub UI
     inputs:
       force_publish:
