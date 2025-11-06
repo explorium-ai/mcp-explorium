@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/TypeScript-Powered-blue" alt="TypeScript">
 </p>
 
-<img src="logo.png" alt="Explorium Logo" width="90"> 
+<img src="logo.png" alt="Explorium Logo" width="90">
 
 **Discover companies, contacts, and business insights—powered by dozens of trusted external data sources.**
 
@@ -21,12 +21,29 @@ This repository contains the configuration and setup files for connecting to Exp
 The **Explorium Business Data Hub** provides AI tools with access to:
 
 - **Company Search & Enrichment**: Find companies by name, domain, or attributes with detailed firmographics
-- **Contact Discovery**: Locate and enrich professional contact information  
+- **Contact Discovery**: Locate and enrich professional contact information
 - **Business Intelligence**: Access technology stack, funding history, growth signals, and business events
 - **Real-Time Data**: Up-to-date information from dozens of trusted external data sources
 - **Workflow Integration**: Seamlessly integrate business data into AI-powered workflows
 
 Search any company or professional for everything from emails and phone numbers to roles, growth signals, tech stack, business events, website changes, and more. Find qualified leads, research prospects, identify talent, or craft personalized outreach—all without leaving your AI tool.
+
+### Examples
+
+**Example 1: Partnership Opportunity Research**
+```
+Who should I contact for partnership with monday.com? Get anyone who can promote a partnership with them. Bring me all the contact details you can find
+```
+
+**Example 2: Business Challenge Analysis**
+```
+What are the business challenges of amazon?
+```
+
+**Example 3: Leadership Team Discovery**
+```
+Get the engineering leadership team at Palo Alto Networks
+```
 
 ## Installation
 
@@ -367,7 +384,7 @@ You can connect your AI tool to Explorium using the Model Context Protocol (MCP)
 **Important**: Different connection methods have different authentication requirements:
 
 - ✅ **Claude Desktop Extension** - No API key required
-- ✅ **MCP Remote Connections** (Streamable HTTP/SSE/STDIO) - No API key required  
+- ✅ **MCP Remote Connections** (Streamable HTTP/SSE/STDIO) - No API key required
 - 🔑 **Docker Self-Hosting** - Requires API key
 
 ### Getting Your API Key
@@ -414,18 +431,17 @@ Once connected, your AI tool will have access to tools for:
 - **Prospect Enrichment**: Access contact information, work history, and professional profiles
 - **Prospect Events**: Track role changes, company moves, and career milestones
 
-
 ## Troubleshooting Connection Issues
 
 If you're experiencing issues connecting your AI tool to Explorium MCP:
 
-1. **Check MCP Client Support**  
+1. **Check MCP Client Support**
    Verify that your AI tool supports MCP clients and can connect to MCP servers. Not all AI tools have this capability built-in yet.
 
-2. **Verify Remote Server Support**  
+2. **Verify Remote Server Support**
    Some AI tools have MCP clients but don't support remote connections. If this is the case, you may still be able to connect using our Docker configuration or local server setup.
 
-3. **Request MCP Support**  
+3. **Request MCP Support**
    If your AI tool doesn't support MCP at all, we recommend reaching out to the tool's developers to request MCP server connection support.
 
 ## Configuration Files
