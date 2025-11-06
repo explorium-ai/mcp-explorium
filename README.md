@@ -432,7 +432,6 @@ Once connected, your AI tool will have access to tools for:
 - **Prospect Events**: Track role changes, company moves, and career milestones
 
 ## Troubleshooting Connection Issues
-</parameter>
 
 If you're experiencing issues connecting your AI tool to Explorium MCP:
 
