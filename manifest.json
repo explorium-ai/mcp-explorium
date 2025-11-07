@@ -2,7 +2,7 @@
   "dxt_version": "0.1",
   "name": "Explorium Business Data Hub",
   "display_name": "Explorium Business Data Hub",
-  "version": "1.1.2",
+  "version": "1.3.0",
   "description": "Discover companies, contacts, and business insights—powered by dozens of trusted external data sources.",
   "long_description": "Search any company or professional for everything from emails and phone numbers to roles, growth signals, tech stack, business events, website changes, and more. Find qualified leads, research prospects, identify talent, or craft personalized outreach—all without leaving chat. Explorium delivers fresh, compliant B2B data through a comprehensive enrichment hub.",
   "author": {
