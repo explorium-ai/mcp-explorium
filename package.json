@@ -7,7 +7,7 @@
     "start": "node server/index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@modelcontextprotocol/sdk": "^1.24.0",
     "express": "^5.1.0",
     "mcp-remote": "^0.1.0"
   },
