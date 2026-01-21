@@ -9,7 +9,7 @@
   },
   "mcpServers": {
     "vibe-prospecting": {
-      "url": "https://mcp-ext.vibeprospecting.ai/mcp",
+      "url": "https://mcp-gemini.vibeprospecting.ai/mcp",
       "type": "mcp"
     }
   },
