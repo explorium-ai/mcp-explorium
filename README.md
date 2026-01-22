@@ -240,61 +240,6 @@ Add this to your Roo Code MCP configuration file. See [Roo Code MCP docs](https:
 </details>
 
 <details>
-<summary><b>Install in Gemini CLI</b></summary>
-
-#### Install as Extension (Recommended)
-
-Install the Gemini CLI extension directly from this repository:
-
-```bash
-gemini extensions install https://github.com/explorium-ai/mcp-explorium
-```
-
-Or for development:
-
-```bash
-gemini extensions link /path/to/mcp-explorium
-```
-
-The extension uses OAuth authentication and will prompt you to log in on first use. Credentials are stored securely in `~/.mcp-auth`.
-
-#### Manual Configuration
-
-Alternatively, you can manually configure the MCP server. See [Gemini CLI Configuration](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html) for details.
-
-1. Open the Gemini CLI settings file. The location is `~/.gemini/settings.json` (where `~` is your home directory).
-2. Add the following to the `mcpServers` object in your `settings.json` file:
-
-```json
-{
-  "mcpServers": {
-    "explorium": {
-      "httpUrl": "https://mcp.explorium.ai/mcp"
-    }
-  }
-}
-```
-
-Or, for a local server:
-
-```json
-{
-  "mcpServers": {
-    "explorium": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.explorium.ai/mcp"]
-    }
-  }
-}
-```
-
-If the `mcpServers` object does not exist, create it.
-
-</details>
-
-
-
-<details>
 <summary><b>Install in JetBrains AI Assistant</b></summary>
 
 See [JetBrains AI Assistant Documentation](https://www.jetbrains.com/help/ai-assistant/configure-an-mcp-server.html) for more details.
